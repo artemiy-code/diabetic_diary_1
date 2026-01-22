@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="16dp">
+
+        <EditText
+            android:id="@+id/glucoseInput"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Сахар (ммоль/л)"
+            android:inputType="numberDecimal" />
+
+        <EditText
+            android:id="@+id/insulinInput"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Инсулин (ЕД)"
+            android:inputType="numberDecimal" />
+
+        <EditText
+            android:id="@+id/breadUnitsInput"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Хлебные единицы"
+            android:inputType="numberDecimal" />
+
+        <EditText
+            android:id="@+id/commentInput"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Комментарий"
+            android:inputType="textMultiLine" />
+
+    </LinearLayout>
+</ScrollView>

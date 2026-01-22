@@ -1,0 +1,251 @@
+package ru.artem_torpedo.diabetesdiary.ui.measurement
+
+import android.content.Context
+import android.content.Intent
+import android.os.Bundle
+import android.widget.ArrayAdapter
+import android.widget.Button
+import android.widget.ListView
+import androidx.activity.viewModels
+import androidx.appcompat.app.AlertDialog
+import androidx.appcompat.app.AppCompatActivity
+import ru.artem_torpedo.diabetesdiary.R
+import ru.artem_torpedo.diabetesdiary.data.local.entity.MeasurementEntity
+
+class MeasurementsActivity : AppCompatActivity() {
+
+    private val viewModel: MeasurementViewModel by viewModels()
+
+    private var fromDateMillis: Long? = null
+    private var toDateMillis: Long? = null
+
+    private var measurementList: List<MeasurementEntity> = emptyList()
+
+    private lateinit var adapter: ArrayAdapter<String>
+    private val items = mutableListOf<String>()
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setContentView(R.layout.activity_measurements)
+
+        val profileId = intent.getLongExtra(EXTRA_PROFILE_ID, -1)
+        val profileName = intent.getStringExtra(EXTRA_PROFILE_NAME)
+
+        title = "Измерения: $profileName"
+
+        val filterButton: Button = findViewById(R.id.filterButton)
+
+        filterButton.setOnClickListener {
+            showFilterDialog(profileId)
+        }
+
+
+        val listView: ListView = findViewById(R.id.measurementsList)
+        val addButton: Button = findViewById(R.id.addMeasurementButton)
+
+        adapter = ArrayAdapter(
+            this,
+            android.R.layout.simple_list_item_1,
+            items
+        )
+        listView.adapter = adapter
+
+        listView.setOnItemLongClickListener { _, _, position, _ ->
+            val measurement = measurementList[position]
+            showDeleteDialog(profileId, measurement)
+            true
+        }
+
+
+        viewModel.measurements.observe(this) { measurements ->
+            measurementList = measurements
+
+            items.clear()
+            items.addAll(
+                measurements.map { m ->
+                    buildString {
+                        append(formatDate(m.dateTime))
+                        append("\nСахар: ${m.glucoseLevel} ммоль/л")
+
+                        m.insulinUnits?.let {
+                            append("\nИнсулин: $it ЕД")
+                        }
+
+                        m.breadUnits?.let {
+                            append("\nХЕ: $it")
+                        }
+
+                        m.comment?.let {
+                            append("\nКомментарий: $it")
+                        }
+                    }
+                }
+            )
+            adapter.notifyDataSetChanged()
+        }
+
+
+        viewModel.loadMeasurements(profileId)
+
+        addButton.setOnClickListener {
+            showAddDialog(profileId)
+        }
+    }
+
+    private fun showAddDialog(profileId: Long) {
+        val dialogView = layoutInflater.inflate(R.layout.dialog_add_measurement, null)
+
+        val glucoseInput = dialogView.findViewById<android.widget.EditText>(R.id.glucoseInput)
+        val insulinInput = dialogView.findViewById<android.widget.EditText>(R.id.insulinInput)
+        val breadInput = dialogView.findViewById<android.widget.EditText>(R.id.breadUnitsInput)
+        val commentInput = dialogView.findViewById<android.widget.EditText>(R.id.commentInput)
+
+        AlertDialog.Builder(this)
+            .setTitle("Новое измерение")
+            .setView(dialogView)
+            .setPositiveButton("Сохранить") { _, _ ->
+
+                val glucose = glucoseInput.text.toString().toFloatOrNull()
+                if (glucose == null) return@setPositiveButton
+
+                val insulin = insulinInput.text.toString().toFloatOrNull()
+                val breadUnits = breadInput.text.toString().toFloatOrNull()
+                val comment = commentInput.text.toString().takeIf { it.isNotBlank() }
+
+                viewModel.addMeasurement(
+                    profileId = profileId,
+                    glucose = glucose,
+                    insulin = insulin,
+                    breadUnits = breadUnits,
+                    comment = comment
+                )
+            }
+            .setNegativeButton("Отмена", null)
+            .show()
+    }
+
+    private fun formatDate(timeMillis: Long): String {
+        val formatter = java.text.SimpleDateFormat(
+            "dd.MM.yyyy HH:mm",
+            java.util.Locale.getDefault()
+        )
+        return formatter.format(java.util.Date(timeMillis))
+    }
+
+    private fun showFilterDialog(profileId: Long) {
+        val dialogView = layoutInflater.inflate(R.layout.dialog_date_filter, null)
+
+        val fromButton = dialogView.findViewById<Button>(R.id.fromDateButton)
+        val toButton = dialogView.findViewById<Button>(R.id.toDateButton)
+
+        fromButton.setOnClickListener {
+            showDatePicker { selectedDate ->
+                fromDateMillis = selectedDate
+                fromButton.text = "С даты: ${formatOnlyDate(selectedDate)}"
+            }
+        }
+
+        toButton.setOnClickListener {
+            showDatePicker { selectedDate ->
+                toDateMillis = selectedDate + (24 * 60 * 60 * 1000 - 1)
+                toButton.text = "По дату: ${formatOnlyDate(selectedDate)}"
+            }
+        }
+
+        AlertDialog.Builder(this)
+            .setTitle("Фильтр по дате")
+            .setView(dialogView)
+            .setPositiveButton("Применить") { _, _ ->
+                val from = fromDateMillis
+                val to = toDateMillis
+
+                if (from != null && to != null) {
+                    viewModel.loadMeasurementsByDate(
+                        profileId,
+                        from,
+                        to
+                    )
+                }
+            }
+            .setNegativeButton("Отмена", null)
+            .show()
+    }
+
+    private fun showDeleteDialog(
+        profileId: Long,
+        measurement: MeasurementEntity
+    ) {
+        AlertDialog.Builder(this)
+            .setTitle("Удалить измерение?")
+            .setMessage("Это действие нельзя отменить.")
+            .setPositiveButton("Удалить") { _, _ ->
+                viewModel.deleteMeasurement(profileId, measurement)
+            }
+            .setNegativeButton("Отмена", null)
+            .show()
+    }
+
+
+    private fun showDatePicker(onDateSelected: (Long) -> Unit) {
+        val calendar = java.util.Calendar.getInstance()
+
+        val dialog = android.app.DatePickerDialog(
+            this,
+            { _, year, month, dayOfMonth ->
+                val selectedCalendar = java.util.Calendar.getInstance()
+                selectedCalendar.set(year, month, dayOfMonth, 0, 0, 0)
+                selectedCalendar.set(java.util.Calendar.MILLISECOND, 0)
+
+                onDateSelected(selectedCalendar.timeInMillis)
+            },
+            calendar.get(java.util.Calendar.YEAR),
+            calendar.get(java.util.Calendar.MONTH),
+            calendar.get(java.util.Calendar.DAY_OF_MONTH)
+        )
+
+        dialog.show()
+    }
+
+    private fun formatOnlyDate(timeMillis: Long): String {
+        val formatter = java.text.SimpleDateFormat(
+            "dd.MM.yyyy",
+            java.util.Locale.getDefault()
+        )
+        return formatter.format(java.util.Date(timeMillis))
+    }
+
+
+    private fun parseDate(
+        text: String,
+        endOfDay: Boolean = false
+    ): Long? {
+        return try {
+            val sdf = java.text.SimpleDateFormat(
+                "dd.MM.yyyy",
+                java.util.Locale.getDefault()
+            )
+            val date = sdf.parse(text) ?: return null
+
+            if (endOfDay) {
+                date.time + (24 * 60 * 60 * 1000 - 1)
+            } else {
+                date.time
+            }
+        } catch (e: Exception) {
+            null
+        }
+    }
+
+
+    companion object {
+        private const val EXTRA_PROFILE_ID = "profile_id"
+        private const val EXTRA_PROFILE_NAME = "profile_name"
+
+        fun start(context: Context, profileId: Long, profileName: String) {
+            val intent = Intent(context, MeasurementsActivity::class.java)
+            intent.putExtra(EXTRA_PROFILE_ID, profileId)
+            intent.putExtra(EXTRA_PROFILE_NAME, profileName)
+            context.startActivity(intent)
+        }
+    }
+}
