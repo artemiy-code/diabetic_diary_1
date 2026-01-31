@@ -12,6 +12,13 @@ import androidx.appcompat.app.AppCompatActivity
 import ru.artem_torpedo.diabetesdiary.R
 import ru.artem_torpedo.diabetesdiary.data.local.entity.MeasurementEntity
 
+import com.google.android.material.bottomnavigation.BottomNavigationView
+import ru.artem_torpedo.diabetesdiary.ui.MainActivity
+import ru.artem_torpedo.diabetesdiary.ui.foodlog.FoodLogActivity
+import ru.artem_torpedo.diabetesdiary.ui.products.ProductsActivity
+import ru.artem_torpedo.diabetesdiary.ui.statistics.StatisticsActivity
+
+
 class MeasurementsActivity : AppCompatActivity() {
 
     private val viewModel: MeasurementViewModel by viewModels()
@@ -28,10 +35,42 @@ class MeasurementsActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_measurements)
 
+        val toolbar = findViewById<com.google.android.material.appbar.MaterialToolbar>(R.id.toolbar)
+        setSupportActionBar(toolbar)
+        supportActionBar?.setDisplayHomeAsUpEnabled(true)
+
+
         val profileId = intent.getLongExtra(EXTRA_PROFILE_ID, -1)
         val profileName = intent.getStringExtra(EXTRA_PROFILE_NAME)
 
         title = "Измерения: $profileName"
+
+        val bottomNav: BottomNavigationView = findViewById(R.id.bottomNavigation)
+        bottomNav.selectedItemId = R.id.nav_measurements
+        bottomNav.setOnItemSelectedListener { item ->
+            when (item.itemId) {
+                R.id.nav_measurements -> true
+                R.id.nav_statistics -> {
+                    StatisticsActivity.start(
+                        context = this,
+                        profileId = profileId,
+                        profileName = profileName ?: ""
+                    )
+                    true
+                }
+                R.id.nav_products -> {
+                    ProductsActivity.start(this, profileId, profileName ?: "")
+                    true
+                }
+
+                R.id.nav_food_log -> {
+                    FoodLogActivity.start(this, profileId, profileName ?: "")
+                    true
+                }
+                else -> false
+            }
+        }
+
 
         val filterButton: Button = findViewById(R.id.filterButton)
 
@@ -248,4 +287,18 @@ class MeasurementsActivity : AppCompatActivity() {
             context.startActivity(intent)
         }
     }
+
+    override fun onSupportNavigateUp(): Boolean {
+        goToProfiles()
+        return true
+    }
+
+    private fun goToProfiles() {
+        val intent = Intent(this, MainActivity::class.java).apply {
+            addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP)
+        }
+        startActivity(intent)
+        finish()
+    }
+
 }

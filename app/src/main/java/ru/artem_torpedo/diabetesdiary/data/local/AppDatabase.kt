@@ -4,26 +4,30 @@ import android.content.Context
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
+import ru.artem_torpedo.diabetesdiary.data.local.dao.FoodEntryDao
 import ru.artem_torpedo.diabetesdiary.data.local.dao.MeasurementDao
+import ru.artem_torpedo.diabetesdiary.data.local.dao.ProductDao
 import ru.artem_torpedo.diabetesdiary.data.local.dao.ProfileDao
-import ru.artem_torpedo.diabetesdiary.data.local.dao.ReminderDao
+import ru.artem_torpedo.diabetesdiary.data.local.entity.FoodEntryEntity
 import ru.artem_torpedo.diabetesdiary.data.local.entity.MeasurementEntity
+import ru.artem_torpedo.diabetesdiary.data.local.entity.ProductEntity
 import ru.artem_torpedo.diabetesdiary.data.local.entity.ProfileEntity
-import ru.artem_torpedo.diabetesdiary.data.local.entity.ReminderEntity
 
 @Database(
     entities = [
         ProfileEntity::class,
         MeasurementEntity::class,
-        ReminderEntity::class,
+        ProductEntity::class,
+        FoodEntryEntity::class,
     ],
-    version = 3
+    version = 8
 )
 abstract class AppDatabase : RoomDatabase() {
 
     abstract fun profileDao(): ProfileDao
     abstract fun measurementDao(): MeasurementDao
-    abstract fun reminderDao(): ReminderDao
+    abstract fun productDao(): ProductDao
+    abstract fun foodEntryDao(): FoodEntryDao
 
     companion object {
         @Volatile

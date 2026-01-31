@@ -6,33 +6,20 @@
     android:orientation="vertical"
     android:padding="16dp">
 
-    <com.google.android.material.appbar.MaterialToolbar
-        android:id="@+id/toolbar"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:theme="@style/ThemeOverlay.MaterialComponents.ActionBar" />
-
-    <Button
-        android:id="@+id/filterButton"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Фильтр по дате" />
-
     <ListView
-        android:id="@+id/measurementsList"
+        android:id="@+id/productsList"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_marginTop="15sp"
-        android:layout_marginBottom="15sp"
         android:layout_weight="1"
-        android:divider="@color/black"
-        android:dividerHeight="1sp" />
+        android:divider="@android:color/darker_gray"
+        android:dividerHeight="1dp" />
 
     <Button
-        android:id="@+id/addMeasurementButton"
+        android:id="@+id/addProductButton"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Добавить измерение" />
+        android:layout_marginTop="12dp"
+        android:text="Добавить продукт" />
 
     <com.google.android.material.bottomnavigation.BottomNavigationView
         android:id="@+id/bottomNavigation"

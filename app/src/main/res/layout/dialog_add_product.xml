@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="16dp">
+
+        <EditText
+            android:id="@+id/nameInput"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Название продукта :" />
+
+        <EditText
+            android:id="@+id/caloriesInput"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Калорий на 100 г :"
+            android:inputType="numberDecimal" />
+
+
+        <EditText
+            android:id="@+id/proteinInput"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Белки на 100 г :"
+            android:inputType="numberDecimal" />
+
+        <EditText
+            android:id="@+id/fatInput"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Жиры на 100 г :"
+            android:inputType="numberDecimal" />
+
+        <EditText
+            android:id="@+id/carbsInput"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Углеводы на 100 г :"
+            android:inputType="numberDecimal" />
+
+    </LinearLayout>
+</ScrollView>

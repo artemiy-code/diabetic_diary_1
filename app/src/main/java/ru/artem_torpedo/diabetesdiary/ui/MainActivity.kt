@@ -12,9 +12,10 @@ import android.widget.ListView
 import androidx.activity.viewModels
 import androidx.annotation.RequiresPermission
 import androidx.appcompat.app.AlertDialog
-import ru.artem_torpedo.diabetesdiary.notifications.ReminderNotification
+import androidx.lifecycle.lifecycleScope
+import kotlinx.coroutines.launch
+import ru.artem_torpedo.diabetesdiary.data.local.seed.ProductSeeder
 import ru.artem_torpedo.diabetesdiary.ui.measurement.MeasurementsActivity
-import ru.artem_torpedo.diabetesdiary.util.ReminderScheduler
 
 class MainActivity : AppCompatActivity() {
 
@@ -28,6 +29,10 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+
+        lifecycleScope.launch {
+            ProductSeeder.seedIfNeeded(this@MainActivity)
+        }
 
         listView = findViewById(R.id.profileListView)
         val addButton: Button = findViewById(R.id.addProfileButton)
@@ -45,14 +50,6 @@ class MainActivity : AppCompatActivity() {
             profileNames.addAll(profiles.map { it.name })
             adapter.notifyDataSetChanged()
         }
-
-        ReminderNotification.createChannel(this)
-//        ReminderScheduler.schedule(
-//            context = this,
-//            title = "Измерить сахар",
-//            timeMillis = System.currentTimeMillis() + 6000
-//        )
-
 
         viewModel.loadProfiles()
 

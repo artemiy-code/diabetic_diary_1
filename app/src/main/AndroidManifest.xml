@@ -15,7 +15,7 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.DiabetesDiary">
         <activity
-            android:name=".ui.reminders.RemindersActivity"
+            android:name=".ui.MainActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -24,15 +24,10 @@
             </intent-filter>
         </activity>
 
-        <activity android:name=".ui.MainActivity" />
-        <activity android:name=".ui.reminders.AddReminderActivity" />
-
-
-        <receiver
-            android:name=".receiver.ReminderReceiver"
-            android:exported="false" />
-
         <activity android:name=".ui.measurement.MeasurementsActivity" />
+        <activity android:name=".ui.statistics.StatisticsActivity" />
+        <activity android:name=".ui.products.ProductsActivity" />
+        <activity android:name=".ui.foodlog.FoodLogActivity" />
 
     </application>
 

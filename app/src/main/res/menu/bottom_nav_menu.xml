@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <item
+        android:id="@+id/nav_measurements"
+        android:icon="@android:drawable/ic_menu_agenda"
+        android:title="Измерения" />
+
+    <item
+        android:id="@+id/nav_statistics"
+        android:icon="@android:drawable/ic_menu_sort_by_size"
+        android:title="Статистика" />
+
+    <item
+        android:id="@+id/nav_products"
+        android:icon="@android:drawable/ic_menu_edit"
+        android:title="Продукты" />
+
+    <item
+        android:id="@+id/nav_food_log"
+        android:icon="@android:drawable/ic_menu_week"
+        android:title="Питание" />
+
+</menu>

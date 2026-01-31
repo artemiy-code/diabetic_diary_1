@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="16dp">
+
+    <TextView
+        android:id="@+id/periodText"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Период: —"
+        android:textSize="16sp"
+        android:layout_marginBottom="10dp" />
+
+    <Button
+        android:id="@+id/filterButtonStats"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Выбрать период" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:layout_marginTop="12dp">
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Средний сахар:" />
+
+        <TextView
+            android:id="@+id/avgValue"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="—"
+            android:textSize="18sp"
+            android:layout_marginBottom="8dp" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Минимум:" />
+
+        <TextView
+            android:id="@+id/minValue"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="—"
+            android:layout_marginBottom="8dp" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Максимум:" />
+
+        <TextView
+            android:id="@+id/maxValue"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="—"
+            android:layout_marginBottom="8dp" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Количество измерений:" />
+
+        <TextView
+            android:id="@+id/countValue"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="0"
+            android:layout_marginBottom="8dp" />
+
+    </LinearLayout>
+
+    <ru.artem_torpedo.diabetesdiary.ui.statistics.GlucoseLineChartView
+        android:id="@+id/glucoseChart"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:layout_marginTop="12dp" />
+
+    <com.google.android.material.bottomnavigation.BottomNavigationView
+        android:id="@+id/bottomNavigation"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="12dp"
+        app:menu="@menu/bottom_nav_menu" />
+
+</LinearLayout>
