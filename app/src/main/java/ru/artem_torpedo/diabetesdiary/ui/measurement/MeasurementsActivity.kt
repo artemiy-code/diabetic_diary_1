@@ -6,6 +6,7 @@ import android.os.Bundle
 import android.widget.ArrayAdapter
 import android.widget.Button
 import android.widget.ListView
+import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
@@ -58,6 +59,7 @@ class MeasurementsActivity : AppCompatActivity() {
                     )
                     true
                 }
+
                 R.id.nav_products -> {
                     ProductsActivity.start(this, profileId, profileName ?: "")
                     true
@@ -67,6 +69,7 @@ class MeasurementsActivity : AppCompatActivity() {
                     FoodLogActivity.start(this, profileId, profileName ?: "")
                     true
                 }
+
                 else -> false
             }
         }
@@ -139,17 +142,72 @@ class MeasurementsActivity : AppCompatActivity() {
         val breadInput = dialogView.findViewById<android.widget.EditText>(R.id.breadUnitsInput)
         val commentInput = dialogView.findViewById<android.widget.EditText>(R.id.commentInput)
 
-        AlertDialog.Builder(this)
+        val dialog = AlertDialog.Builder(this)
             .setTitle("Новое измерение")
             .setView(dialogView)
-            .setPositiveButton("Сохранить") { _, _ ->
+            .setPositiveButton("Сохранить", null)
+            .setNegativeButton("Отмена", null)
+            .create()
 
-                val glucose = glucoseInput.text.toString().toFloatOrNull()
-                if (glucose == null) return@setPositiveButton
+        dialog.setOnShowListener {
+            dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener {
 
-                val insulin = insulinInput.text.toString().toFloatOrNull()
-                val breadUnits = breadInput.text.toString().toFloatOrNull()
-                val comment = commentInput.text.toString().takeIf { it.isNotBlank() }
+                val glucoseRaw = glucoseInput.text.toString().replace(',', '.').trim()
+                val glucose = glucoseRaw.toFloatOrNull()
+                if (glucose == null) {
+                    glucoseInput.error = "Введите число"
+                    glucoseInput.requestFocus()
+                    Toast.makeText(this, "Введите корректный сахар", android.widget.Toast.LENGTH_SHORT).show()
+                    return@setOnClickListener
+                }
+                if (glucose <= 0f || glucose > 40f) {
+                    glucoseInput.error = "Диапазон 0–40"
+                    glucoseInput.requestFocus()
+                    Toast.makeText(this, "Сахар должен быть в диапазоне 0–40", android.widget.Toast.LENGTH_SHORT).show()
+                    return@setOnClickListener
+                }
+
+                val insulin = run {
+                    val raw = insulinInput.text.toString().replace(',', '.').trim()
+                    if (raw.isBlank()) null else {
+                        val v = raw.toFloatOrNull()
+                        if (v == null) {
+                            insulinInput.error = "Введите число"
+                            insulinInput.requestFocus()
+                            Toast.makeText(this, "Некорректный инсулин", android.widget.Toast.LENGTH_SHORT).show()
+                            return@setOnClickListener
+                        }
+                        if (v < 0f || v > 200f) {
+                            insulinInput.error = "Диапазон 0–200"
+                            insulinInput.requestFocus()
+                            Toast.makeText(this, "Инсулин вне диапазона", android.widget.Toast.LENGTH_SHORT).show()
+                            return@setOnClickListener
+                        }
+                        v
+                    }
+                }
+
+                val breadUnits = run {
+                    val raw = breadInput.text.toString().replace(',', '.').trim()
+                    if (raw.isBlank()) null else {
+                        val v = raw.toFloatOrNull()
+                        if (v == null) {
+                            breadInput.error = "Введите число"
+                            breadInput.requestFocus()
+                            android.widget.Toast.makeText(this, "Некорректные ХЕ", android.widget.Toast.LENGTH_SHORT).show()
+                            return@setOnClickListener
+                        }
+                        if (v < 0f || v > 50f) {
+                            breadInput.error = "Диапазон 0–50"
+                            breadInput.requestFocus()
+                            android.widget.Toast.makeText(this, "ХЕ вне диапазона", android.widget.Toast.LENGTH_SHORT).show()
+                            return@setOnClickListener
+                        }
+                        v
+                    }
+                }
+
+                val comment = commentInput.text.toString().trim().takeIf { it.isNotBlank() }
 
                 viewModel.addMeasurement(
                     profileId = profileId,
@@ -158,10 +216,14 @@ class MeasurementsActivity : AppCompatActivity() {
                     breadUnits = breadUnits,
                     comment = comment
                 )
+
+                dialog.dismiss()
             }
-            .setNegativeButton("Отмена", null)
-            .show()
+        }
+
+        dialog.show()
     }
+
 
     private fun formatDate(timeMillis: Long): String {
         val formatter = java.text.SimpleDateFormat(
@@ -191,23 +253,32 @@ class MeasurementsActivity : AppCompatActivity() {
             }
         }
 
-        AlertDialog.Builder(this)
+        val dialog = AlertDialog.Builder(this)
             .setTitle("Фильтр по дате")
             .setView(dialogView)
-            .setPositiveButton("Применить") { _, _ ->
+            .setPositiveButton("Применить", null)
+            .setNegativeButton("Отмена", null)
+            .create()
+
+        dialog.setOnShowListener {
+            dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener {
                 val from = fromDateMillis
                 val to = toDateMillis
 
-                if (from != null && to != null) {
-                    viewModel.loadMeasurementsByDate(
-                        profileId,
-                        from,
-                        to
-                    )
+                if (from == null || to == null) {
+                    Toast.makeText(this, "Выберите обе даты", Toast.LENGTH_SHORT).show()
+                    return@setOnClickListener
                 }
+                if (from > to) {
+                    Toast.makeText(this, "Дата начала больше даты окончания", Toast.LENGTH_SHORT).show()
+                    return@setOnClickListener
+                }
+
+                viewModel.loadMeasurementsByDate(profileId, from, to)
+                dialog.dismiss()
             }
-            .setNegativeButton("Отмена", null)
-            .show()
+        }
+        dialog.show()
     }
 
     private fun showDeleteDialog(
@@ -252,29 +323,6 @@ class MeasurementsActivity : AppCompatActivity() {
         )
         return formatter.format(java.util.Date(timeMillis))
     }
-
-
-    private fun parseDate(
-        text: String,
-        endOfDay: Boolean = false
-    ): Long? {
-        return try {
-            val sdf = java.text.SimpleDateFormat(
-                "dd.MM.yyyy",
-                java.util.Locale.getDefault()
-            )
-            val date = sdf.parse(text) ?: return null
-
-            if (endOfDay) {
-                date.time + (24 * 60 * 60 * 1000 - 1)
-            } else {
-                date.time
-            }
-        } catch (e: Exception) {
-            null
-        }
-    }
-
 
     companion object {
         private const val EXTRA_PROFILE_ID = "profile_id"

@@ -7,6 +7,7 @@ import android.widget.ArrayAdapter
 import android.widget.Button
 import android.widget.EditText
 import android.widget.ListView
+import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
@@ -118,17 +119,45 @@ class ProductsActivity : AppCompatActivity() {
 
         val titleText = if (existing == null) "Новый продукт" else "Редактировать продукт"
 
-        AlertDialog.Builder(this)
+        val dialog = AlertDialog.Builder(this)
             .setTitle(titleText)
             .setView(dialogView)
-            .setPositiveButton("Сохранить") { _, _ ->
-                val name = nameInput.text.toString().trim()
-                val cal = caloriesInput.text.toString().toFloatOrNull()
-                val carbs = carbsInput.text.toString().toFloatOrNull()
-                val prot = proteinInput.text.toString().toFloatOrNull()
-                val fat = fatInput.text.toString().toFloatOrNull()
+            .setPositiveButton("Сохранить", null)
+            .setNegativeButton("Отмена", null)
+            .create()
 
-                if (name.isBlank() || cal == null || carbs == null || prot == null || fat == null) return@setPositiveButton
+        fun parseRequiredFloat(input: EditText, fieldLabel: String, max: Float): Float? {
+            val raw = input.text.toString().replace(',', '.').trim()
+            val v = raw.toFloatOrNull()
+            if (v == null) {
+                input.error = "Введите число"
+                input.requestFocus()
+                Toast.makeText(this, "Некорректное значение: $fieldLabel", Toast.LENGTH_SHORT).show()
+                return null
+            }
+            if (v < 0f || v > max) {
+                input.error = "Диапазон 0–${max.toInt()}"
+                input.requestFocus()
+                Toast.makeText(this, "Значение вне диапазона: $fieldLabel", Toast.LENGTH_SHORT).show()
+                return null
+            }
+            return v
+        }
+
+        dialog.setOnShowListener {
+            dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener {
+                val name = nameInput.text.toString().trim()
+                if (name.length < 2) {
+                    nameInput.error = "Минимум 2 символа"
+                    nameInput.requestFocus()
+                    Toast.makeText(this, "Введите корректное название", Toast.LENGTH_SHORT).show()
+                    return@setOnClickListener
+                }
+
+                val cal = parseRequiredFloat(caloriesInput, "Калории", 2000f) ?: return@setOnClickListener
+                val carbs = parseRequiredFloat(carbsInput, "Углеводы", 300f) ?: return@setOnClickListener
+                val prot = parseRequiredFloat(proteinInput, "Белки", 300f) ?: return@setOnClickListener
+                val fatV = parseRequiredFloat(fatInput, "Жиры", 300f) ?: return@setOnClickListener
 
                 val entity = if (existing == null) {
                     ProductEntity(
@@ -136,7 +165,7 @@ class ProductsActivity : AppCompatActivity() {
                         caloriesPer100g = cal,
                         carbsPer100g = carbs,
                         proteinPer100g = prot,
-                        fatPer100g = fat
+                        fatPer100g = fatV
                     )
                 } else {
                     existing.copy(
@@ -144,14 +173,16 @@ class ProductsActivity : AppCompatActivity() {
                         caloriesPer100g = cal,
                         carbsPer100g = carbs,
                         proteinPer100g = prot,
-                        fatPer100g = fat
+                        fatPer100g = fatV
                     )
                 }
 
                 if (existing == null) viewModel.add(entity) else viewModel.update(entity)
+                dialog.dismiss()
             }
-            .setNegativeButton("Отмена", null)
-            .show()
+        }
+
+        dialog.show()
     }
 
     private fun showDeleteDialog(product: ProductEntity) {
@@ -189,5 +220,32 @@ class ProductsActivity : AppCompatActivity() {
         startActivity(intent)
         finish()
     }
+
+    fun parseNonNegative(
+        input: EditText,
+        fieldName: String,
+        maxValue: Float
+    ): Float? {
+        val text = input.text.toString().replace(',', '.').trim()
+        val value = text.toFloatOrNull()
+
+        if (value == null) {
+            input.error = "Введите число"
+            input.requestFocus()
+            return null
+        }
+        if (value < 0f) {
+            input.error = "$fieldName не может быть отрицательным"
+            input.requestFocus()
+            return null
+        }
+        if (value > maxValue) {
+            input.error = "$fieldName выглядит слишком большим"
+            input.requestFocus()
+            return null
+        }
+        return value
+    }
+
 
 }

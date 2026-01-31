@@ -195,18 +195,44 @@ class FoodLogActivity : AppCompatActivity() {
 
         selectedText.text = "Продукт: $productName"
 
-        AlertDialog.Builder(this)
+        val dialog = AlertDialog.Builder(this)
             .setTitle("Добавить прием пищи")
             .setView(dialogView)
-            .setPositiveButton("Сохранить") { _, _ ->
-                val grams = gramsInput.text.toString().replace(',', '.').toFloatOrNull()
-                    ?: return@setPositiveButton
-                val comment = commentInput.text.toString().takeIf { it.isNotBlank() }
-                viewModel.addEntry(profileId, productId, grams, comment)
-            }
+            .setPositiveButton("Сохранить", null)
             .setNegativeButton("Отмена", null)
-            .show()
+            .create()
+
+        dialog.setOnShowListener {
+            dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener {
+                val raw = gramsInput.text.toString().replace(',', '.').trim()
+                val grams = raw.toFloatOrNull()
+
+                if (grams == null) {
+                    gramsInput.error = "Введите число"
+                    gramsInput.requestFocus()
+                    Toast.makeText(this, "Введите корректное количество граммов", Toast.LENGTH_SHORT).show()
+                    return@setOnClickListener
+                }
+                if (grams <= 0f) {
+                    gramsInput.error = "Должно быть больше 0"
+                    gramsInput.requestFocus()
+                    return@setOnClickListener
+                }
+                if (grams > 5000f) {
+                    gramsInput.error = "Слишком большое значение"
+                    gramsInput.requestFocus()
+                    return@setOnClickListener
+                }
+
+                val comment = commentInput.text.toString().trim().takeIf { it.isNotBlank() }
+                viewModel.addEntry(profileId, productId, grams, comment)
+                dialog.dismiss()
+            }
+        }
+
+        dialog.show()
     }
+
 
 
     private fun showFilterDialog() {
@@ -228,18 +254,34 @@ class FoodLogActivity : AppCompatActivity() {
             }
         }
 
-        AlertDialog.Builder(this)
+        val dialog = AlertDialog.Builder(this)
             .setTitle("Фильтр по дате")
             .setView(dialogView)
-            .setPositiveButton("Применить") { _, _ ->
+            .setPositiveButton("Применить", null)
+            .setNegativeButton("Отмена", null)
+            .create()
+
+        dialog.setOnShowListener {
+            dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener {
                 val from = fromDateMillis
                 val to = toDateMillis
-                if (from != null && to != null) {
-                    viewModel.loadFoodLogByDate(profileId, from, to)
+
+                if (from == null || to == null) {
+                    Toast.makeText(this, "Выберите обе даты", Toast.LENGTH_SHORT).show()
+                    return@setOnClickListener
                 }
+                if (from > to) {
+                    Toast.makeText(this, "Дата начала больше даты окончания", Toast.LENGTH_SHORT).show()
+                    return@setOnClickListener
+                }
+
+                viewModel.loadFoodLogByDate(profileId, from, to)
+                dialog.dismiss()
             }
-            .setNegativeButton("Отмена", null)
-            .show()
+        }
+
+        dialog.show()
+
     }
 
     private fun showDeleteDialog(entryId: Long) {

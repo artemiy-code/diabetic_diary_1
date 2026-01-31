@@ -9,6 +9,7 @@ import android.widget.ArrayAdapter
 import android.widget.Button
 import android.widget.EditText
 import android.widget.ListView
+import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.annotation.RequiresPermission
 import androidx.appcompat.app.AlertDialog
@@ -69,19 +70,30 @@ class MainActivity : AppCompatActivity() {
     private fun showAddProfileDialog() {
         val input = EditText(this)
 
-        AlertDialog.Builder(this)
+        val dialog = AlertDialog.Builder(this)
             .setTitle("Новый профиль")
             .setMessage("Введите имя пациента")
             .setView(input)
-            .setPositiveButton("Добавить") { _, _ ->
-                val name = input.text.toString()
-                if (name.isNotBlank()) {
-                    viewModel.addProfile(name)
-                }
-            }
+            .setPositiveButton("Добавить", null)
             .setNegativeButton("Отмена", null)
-            .show()
+            .create()
+
+        dialog.setOnShowListener {
+            dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener {
+                val name = input.text.toString().trim()
+
+                if (name.length < 2) {
+                    input.error = "Минимум 2 символа"
+                    input.requestFocus()
+                    Toast.makeText(this, "Введите корректное имя профиля", android.widget.Toast.LENGTH_SHORT).show()
+                    return@setOnClickListener
+                }
+
+                viewModel.addProfile(name)
+                dialog.dismiss()
+            }
+        }
+
+        dialog.show()
     }
-
-
 }

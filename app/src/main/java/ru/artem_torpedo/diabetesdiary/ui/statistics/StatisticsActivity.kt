@@ -5,6 +5,7 @@ import android.content.Intent
 import android.os.Bundle
 import android.widget.Button
 import android.widget.TextView
+import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
@@ -122,12 +123,35 @@ class StatisticsActivity : AppCompatActivity() {
             }
         }
 
-        AlertDialog.Builder(this)
+        val dialog = AlertDialog.Builder(this)
             .setTitle("Период статистики")
             .setView(dialogView)
-            .setPositiveButton("Применить") { _, _ -> load(profileId) }
+            .setPositiveButton("Применить", null)
             .setNegativeButton("Отмена", null)
-            .show()
+            .create()
+
+        dialog.setOnShowListener {
+            dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener {
+                val from = fromDateMillis
+                val to = toDateMillis
+
+                if (from == null || to == null) {
+                    Toast.makeText(this, "Выберите обе даты", Toast.LENGTH_SHORT).show()
+                    return@setOnClickListener
+                }
+
+                if (from > to) {
+                    Toast.makeText(this, "Дата начала больше даты окончания", Toast.LENGTH_SHORT).show()
+                    return@setOnClickListener
+                }
+
+                load(profileId)
+                dialog.dismiss()
+            }
+        }
+
+        dialog.show()
+
     }
 
     private fun showDatePicker(onDateSelected: (Long) -> Unit) {
