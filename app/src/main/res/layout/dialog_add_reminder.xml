@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="16dp">
+
+    <EditText
+        android:id="@+id/reminderTitleInput"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Название (например, Инсулин / Таблетки)"
+        android:inputType="text"
+        android:maxLines="1" />
+
+    <EditText
+        android:id="@+id/reminderNoteInput"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Комментарий (необязательно)"
+        android:inputType="textMultiLine"
+        android:minLines="2"
+        android:layout_marginTop="10dp" />
+
+    <Button
+        android:id="@+id/reminderTimeButton"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Время: 09:00"
+        android:layout_marginTop="10dp" />
+
+    <CheckBox
+        android:id="@+id/repeatDailyCheck"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Повторять ежедневно"
+        android:checked="true"
+        android:layout_marginTop="10dp" />
+
+    <CheckBox
+        android:id="@+id/enabledCheck"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Включено"
+        android:checked="true" />
+
+</LinearLayout>

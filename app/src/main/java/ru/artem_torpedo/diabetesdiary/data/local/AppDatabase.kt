@@ -8,10 +8,12 @@ import ru.artem_torpedo.diabetesdiary.data.local.dao.FoodEntryDao
 import ru.artem_torpedo.diabetesdiary.data.local.dao.MeasurementDao
 import ru.artem_torpedo.diabetesdiary.data.local.dao.ProductDao
 import ru.artem_torpedo.diabetesdiary.data.local.dao.ProfileDao
+import ru.artem_torpedo.diabetesdiary.data.local.dao.ReminderDao
 import ru.artem_torpedo.diabetesdiary.data.local.entity.FoodEntryEntity
 import ru.artem_torpedo.diabetesdiary.data.local.entity.MeasurementEntity
 import ru.artem_torpedo.diabetesdiary.data.local.entity.ProductEntity
 import ru.artem_torpedo.diabetesdiary.data.local.entity.ProfileEntity
+import ru.artem_torpedo.diabetesdiary.data.local.entity.ReminderEntity
 
 @Database(
     entities = [
@@ -19,8 +21,9 @@ import ru.artem_torpedo.diabetesdiary.data.local.entity.ProfileEntity
         MeasurementEntity::class,
         ProductEntity::class,
         FoodEntryEntity::class,
+        ReminderEntity::class,
     ],
-    version = 8
+    version = 9
 )
 abstract class AppDatabase : RoomDatabase() {
 
@@ -28,6 +31,7 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun measurementDao(): MeasurementDao
     abstract fun productDao(): ProductDao
     abstract fun foodEntryDao(): FoodEntryDao
+    abstract fun reminderDao(): ReminderDao
 
     companion object {
         @Volatile

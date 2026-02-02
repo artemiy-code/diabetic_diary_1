@@ -9,7 +9,7 @@ import ru.artem_torpedo.diabetesdiary.data.local.entity.ProductEntity
 object ProductSeeder {
 
     private const val PREFS = "seed_prefs"
-    private const val KEY_DONE = "products_seed_done_v2"
+    private const val KEY_DONE = "products_seed_done_v3"
     private const val ASSET_FILE = "products_seed.json"
 
     suspend fun seedIfNeeded(context: Context) {

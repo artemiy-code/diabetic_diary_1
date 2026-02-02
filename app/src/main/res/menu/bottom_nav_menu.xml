@@ -21,4 +21,9 @@
         android:icon="@android:drawable/ic_menu_week"
         android:title="Питание" />
 
+    <item
+        android:id="@+id/nav_reminders"
+        android:icon="@android:drawable/ic_menu_my_calendar"
+        android:title="Напоминания" />
+
 </menu>

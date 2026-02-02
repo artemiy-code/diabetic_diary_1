@@ -13,7 +13,9 @@ import com.google.android.material.bottomnavigation.BottomNavigationView
 import ru.artem_torpedo.diabetesdiary.R
 import ru.artem_torpedo.diabetesdiary.ui.MainActivity
 import ru.artem_torpedo.diabetesdiary.ui.foodlog.FoodLogActivity
+import ru.artem_torpedo.diabetesdiary.ui.measurement.MeasurementsActivity
 import ru.artem_torpedo.diabetesdiary.ui.products.ProductsActivity
+import ru.artem_torpedo.diabetesdiary.ui.reminders.RemindersActivity
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Date
@@ -60,7 +62,7 @@ class StatisticsActivity : AppCompatActivity() {
         bottomNav.setOnItemSelectedListener { item ->
             when (item.itemId) {
                 R.id.nav_measurements -> {
-                    finish()
+                    MeasurementsActivity.start(this, profileId, profileName)
                     true
                 }
                 R.id.nav_statistics -> true
@@ -73,6 +75,11 @@ class StatisticsActivity : AppCompatActivity() {
                     FoodLogActivity.start(this, profileId, profileName)
                     true
                 }
+                R.id.nav_reminders -> {
+                    RemindersActivity.start(this, profileId, profileName)
+                    true
+                }
+
                 else -> false
             }
         }

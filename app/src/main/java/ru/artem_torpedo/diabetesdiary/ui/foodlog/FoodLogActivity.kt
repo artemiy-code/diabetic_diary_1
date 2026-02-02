@@ -13,6 +13,7 @@ import ru.artem_torpedo.diabetesdiary.data.local.entity.FoodEntryWithProduct
 import ru.artem_torpedo.diabetesdiary.ui.MainActivity
 import ru.artem_torpedo.diabetesdiary.ui.measurement.MeasurementsActivity
 import ru.artem_torpedo.diabetesdiary.ui.products.ProductsActivity
+import ru.artem_torpedo.diabetesdiary.ui.reminders.RemindersActivity
 import ru.artem_torpedo.diabetesdiary.ui.statistics.StatisticsActivity
 
 class FoodLogActivity : AppCompatActivity() {
@@ -82,6 +83,11 @@ class FoodLogActivity : AppCompatActivity() {
                     true
                 }
                 R.id.nav_food_log -> true
+                R.id.nav_reminders -> {
+                    RemindersActivity.start(this, profileId, profileName)
+                    true
+                }
+
                 else -> false
             }
         }
