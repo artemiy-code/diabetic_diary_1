@@ -42,7 +42,6 @@ class FoodLogActivity : AppCompatActivity() {
 
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
 
-
         totalCaloriesText = findViewById(R.id.totalCaloriesText)
 
         val listView: ListView = findViewById(R.id.foodLogList)
@@ -74,14 +73,17 @@ class FoodLogActivity : AppCompatActivity() {
                     MeasurementsActivity.start(this, profileId, profileName)
                     true
                 }
+
                 R.id.nav_statistics -> {
                     StatisticsActivity.start(this, profileId, profileName)
                     true
                 }
+
                 R.id.nav_products -> {
                     ProductsActivity.start(this, profileId, profileName)
                     true
                 }
+
                 R.id.nav_food_log -> true
                 R.id.nav_reminders -> {
                     RemindersActivity.start(this, profileId, profileName)
@@ -107,7 +109,13 @@ class FoodLogActivity : AppCompatActivity() {
                 buildString {
                     append(formatDate(e.dateTime))
                     append("\n${e.productName}, ${fmt1(e.grams)} г")
-                    append("\nКкал: ${fmt1(kcal)}, Б: ${fmt1(prot)}, Ж: ${fmt1(fat)}, У: ${fmt1(carbs)}")
+                    append(
+                        "\nКкал: ${fmt1(kcal)}, Б: ${fmt1(prot)}, Ж: ${fmt1(fat)}, У: ${
+                            fmt1(
+                                carbs
+                            )
+                        }"
+                    )
                     e.comment?.takeIf { it.isNotBlank() }?.let { append("\nКомментарий: $it") }
                 }
             })
@@ -145,7 +153,7 @@ class FoodLogActivity : AppCompatActivity() {
         val searchInput = dialogView.findViewById<EditText>(R.id.searchInput)
         val listView = dialogView.findViewById<ListView>(R.id.productsList)
 
-        // Стартовый список: первые 50, чтобы не лагало на открытии
+        // Стартовый список сделал первые 50. Уменьшить, если будет лагать
         var filtered = allProducts
         val display = mutableListOf<String>()
         val adapter = ArrayAdapter(this, android.R.layout.simple_list_item_1, display)
@@ -156,7 +164,6 @@ class FoodLogActivity : AppCompatActivity() {
             filtered = if (q.isEmpty()) {
                 allProducts.take(50)
             } else {
-                // Фильтр по вхождению, ограничим результат до 100 для отзывчивости
                 allProducts.asSequence()
                     .filter { it.name.lowercase().contains(q) }
                     .take(100)
@@ -187,6 +194,7 @@ class FoodLogActivity : AppCompatActivity() {
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
                 rebuildList(s?.toString().orEmpty())
             }
+
             override fun afterTextChanged(s: android.text.Editable?) {}
         })
 
@@ -216,7 +224,11 @@ class FoodLogActivity : AppCompatActivity() {
                 if (grams == null) {
                     gramsInput.error = "Введите число"
                     gramsInput.requestFocus()
-                    Toast.makeText(this, "Введите корректное количество граммов", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(
+                        this,
+                        "Введите корректное количество граммов",
+                        Toast.LENGTH_SHORT
+                    ).show()
                     return@setOnClickListener
                 }
                 if (grams <= 0f) {
@@ -238,7 +250,6 @@ class FoodLogActivity : AppCompatActivity() {
 
         dialog.show()
     }
-
 
 
     private fun showFilterDialog() {
@@ -277,7 +288,8 @@ class FoodLogActivity : AppCompatActivity() {
                     return@setOnClickListener
                 }
                 if (from > to) {
-                    Toast.makeText(this, "Дата начала больше даты окончания", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(this, "Дата начала больше даты окончания", Toast.LENGTH_SHORT)
+                        .show()
                     return@setOnClickListener
                 }
 
@@ -285,9 +297,7 @@ class FoodLogActivity : AppCompatActivity() {
                 dialog.dismiss()
             }
         }
-
         dialog.show()
-
     }
 
     private fun showDeleteDialog(entryId: Long) {
@@ -302,7 +312,8 @@ class FoodLogActivity : AppCompatActivity() {
     }
 
     private fun formatDate(timeMillis: Long): String {
-        val formatter = java.text.SimpleDateFormat("dd.MM.yyyy HH:mm", java.util.Locale.getDefault())
+        val formatter =
+            java.text.SimpleDateFormat("dd.MM.yyyy HH:mm", java.util.Locale.getDefault())
         return formatter.format(java.util.Date(timeMillis))
     }
 

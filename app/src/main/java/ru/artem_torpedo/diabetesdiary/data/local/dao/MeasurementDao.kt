@@ -18,12 +18,14 @@ interface MeasurementDao {
     @Query("SELECT * FROM measurements WHERE profileId = :profileId ORDER BY dateTime DESC")
     suspend fun getMeasurementsByProfile(profileId: Long): List<MeasurementEntity>
 
-    @Query("""
+    @Query(
+        """
     SELECT * FROM measurements
     WHERE profileId = :profileId
     AND dateTime BETWEEN :fromDate AND :toDate
     ORDER BY dateTime DESC
-""")
+"""
+    )
     suspend fun getMeasurementsByDateRange(
         profileId: Long,
         fromDate: Long,

@@ -41,7 +41,6 @@ class MeasurementsActivity : AppCompatActivity() {
         setSupportActionBar(toolbar)
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
 
-
         val profileId = intent.getLongExtra(EXTRA_PROFILE_ID, -1)
         val profileName = intent.getStringExtra(EXTRA_PROFILE_NAME)
 
@@ -70,11 +69,11 @@ class MeasurementsActivity : AppCompatActivity() {
                     FoodLogActivity.start(this, profileId, profileName ?: "")
                     true
                 }
+
                 R.id.nav_reminders -> {
                     RemindersActivity.start(this, profileId, profileName ?: "")
                     true
                 }
-
 
                 else -> false
             }
@@ -82,11 +81,9 @@ class MeasurementsActivity : AppCompatActivity() {
 
 
         val filterButton: Button = findViewById(R.id.filterButton)
-
         filterButton.setOnClickListener {
             showFilterDialog(profileId)
         }
-
 
         val listView: ListView = findViewById(R.id.measurementsList)
         val addButton: Button = findViewById(R.id.addMeasurementButton)
@@ -103,7 +100,6 @@ class MeasurementsActivity : AppCompatActivity() {
             showDeleteDialog(profileId, measurement)
             true
         }
-
 
         viewModel.measurements.observe(this) { measurements ->
             measurementList = measurements
@@ -131,7 +127,6 @@ class MeasurementsActivity : AppCompatActivity() {
             )
             adapter.notifyDataSetChanged()
         }
-
 
         viewModel.loadMeasurements(profileId)
 
@@ -163,13 +158,14 @@ class MeasurementsActivity : AppCompatActivity() {
                 if (glucose == null) {
                     glucoseInput.error = "Введите число"
                     glucoseInput.requestFocus()
-                    Toast.makeText(this, "Введите корректный сахар", android.widget.Toast.LENGTH_SHORT).show()
+                    Toast.makeText(this, "Введите корректный сахар", Toast.LENGTH_SHORT).show()
                     return@setOnClickListener
                 }
                 if (glucose <= 0f || glucose > 40f) {
                     glucoseInput.error = "Диапазон 0–40"
                     glucoseInput.requestFocus()
-                    Toast.makeText(this, "Сахар должен быть в диапазоне 0–40", android.widget.Toast.LENGTH_SHORT).show()
+                    Toast.makeText(this, "Сахар должен быть в диапазоне 0–40", Toast.LENGTH_SHORT)
+                        .show()
                     return@setOnClickListener
                 }
 
@@ -180,13 +176,13 @@ class MeasurementsActivity : AppCompatActivity() {
                         if (v == null) {
                             insulinInput.error = "Введите число"
                             insulinInput.requestFocus()
-                            Toast.makeText(this, "Некорректный инсулин", android.widget.Toast.LENGTH_SHORT).show()
+                            Toast.makeText(this, "Некорректный инсулин", Toast.LENGTH_SHORT).show()
                             return@setOnClickListener
                         }
                         if (v < 0f || v > 200f) {
                             insulinInput.error = "Диапазон 0–200"
                             insulinInput.requestFocus()
-                            Toast.makeText(this, "Инсулин вне диапазона", android.widget.Toast.LENGTH_SHORT).show()
+                            Toast.makeText(this, "Инсулин вне диапазона", Toast.LENGTH_SHORT).show()
                             return@setOnClickListener
                         }
                         v
@@ -200,13 +196,13 @@ class MeasurementsActivity : AppCompatActivity() {
                         if (v == null) {
                             breadInput.error = "Введите число"
                             breadInput.requestFocus()
-                            android.widget.Toast.makeText(this, "Некорректные ХЕ", android.widget.Toast.LENGTH_SHORT).show()
+                            Toast.makeText(this, "Некорректные ХЕ", Toast.LENGTH_SHORT).show()
                             return@setOnClickListener
                         }
                         if (v < 0f || v > 50f) {
                             breadInput.error = "Диапазон 0–50"
                             breadInput.requestFocus()
-                            android.widget.Toast.makeText(this, "ХЕ вне диапазона", android.widget.Toast.LENGTH_SHORT).show()
+                            Toast.makeText(this, "ХЕ вне диапазона", Toast.LENGTH_SHORT).show()
                             return@setOnClickListener
                         }
                         v
@@ -276,7 +272,8 @@ class MeasurementsActivity : AppCompatActivity() {
                     return@setOnClickListener
                 }
                 if (from > to) {
-                    Toast.makeText(this, "Дата начала больше даты окончания", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(this, "Дата начала больше даты окончания", Toast.LENGTH_SHORT)
+                        .show()
                     return@setOnClickListener
                 }
 

@@ -30,12 +30,9 @@ import androidx.room.PrimaryKey
 data class FoodEntryEntity(
     @PrimaryKey(autoGenerate = true)
     val id: Long = 0,
-
     val profileId: Long,
     val productId: Long,
-
     val grams: Float,
     val dateTime: Long = System.currentTimeMillis(),
-
     val comment: String? = null
 )

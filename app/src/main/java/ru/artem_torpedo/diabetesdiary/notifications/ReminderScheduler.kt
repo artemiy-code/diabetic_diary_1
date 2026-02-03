@@ -40,8 +40,8 @@ object ReminderScheduler {
         val triggerAtMillis = nextTriggerMillis(hour, minute)
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.S) {
             if (!alarmManager.canScheduleExactAlarms()) {
-                // без этого exact alarm может не сработать
-                val intentSettings = Intent(android.provider.Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM)
+                val intentSettings =
+                    Intent(android.provider.Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM)
                 intentSettings.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                 context.startActivity(intentSettings)
                 return

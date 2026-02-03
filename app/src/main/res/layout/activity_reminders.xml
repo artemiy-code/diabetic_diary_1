@@ -8,29 +8,29 @@
         android:id="@+id/addReminderButton"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:text="Добавить напоминание"
         android:layout_margin="12dp"
-        app:layout_constraintTop_toTopOf="parent"
+        android:text="Добавить напоминание"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent" />
+        app:layout_constraintTop_toTopOf="parent" />
 
     <ListView
         android:id="@+id/remindersList"
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:layout_margin="12dp"
-        app:layout_constraintTop_toBottomOf="@id/addReminderButton"
         app:layout_constraintBottom_toTopOf="@id/bottomNavigation"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent" />
+        app:layout_constraintTop_toBottomOf="@id/addReminderButton" />
 
     <com.google.android.material.bottomnavigation.BottomNavigationView
         android:id="@+id/bottomNavigation"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        app:menu="@menu/bottom_nav_menu"
         app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent" />
+        app:menu="@menu/bottom_nav_menu" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

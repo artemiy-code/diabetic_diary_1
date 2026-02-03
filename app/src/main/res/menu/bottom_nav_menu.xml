@@ -3,27 +3,27 @@
 
     <item
         android:id="@+id/nav_measurements"
-        android:icon="@android:drawable/ic_menu_agenda"
-        android:title="Измерения" />
+        android:icon="@drawable/ic_measurments_2"
+        android:title="" />
 
     <item
         android:id="@+id/nav_statistics"
-        android:icon="@android:drawable/ic_menu_sort_by_size"
-        android:title="Статистика" />
+        android:icon="@drawable/ic_statistics_2"
+        android:title="" />
 
     <item
         android:id="@+id/nav_products"
-        android:icon="@android:drawable/ic_menu_edit"
-        android:title="Продукты" />
+        android:icon="@drawable/ic_products_2"
+        android:title="" />
 
     <item
         android:id="@+id/nav_food_log"
-        android:icon="@android:drawable/ic_menu_week"
-        android:title="Питание" />
+        android:icon="@drawable/ic_food_log_1"
+        android:title="" />
 
     <item
         android:id="@+id/nav_reminders"
-        android:icon="@android:drawable/ic_menu_my_calendar"
-        android:title="Напоминания" />
+        android:icon="@drawable/ic_reminders_1"
+        android:title="" />
 
 </menu>

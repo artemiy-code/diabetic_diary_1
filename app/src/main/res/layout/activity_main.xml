@@ -9,10 +9,10 @@
         android:id="@+id/titleText"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginBottom="16dp"
         android:text="Профили пациентов"
         android:textSize="20sp"
-        android:textStyle="bold"
-        android:layout_marginBottom="16dp" />
+        android:textStyle="bold" />
 
     <ListView
         android:id="@+id/profileListView"

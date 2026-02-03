@@ -23,8 +23,8 @@ data class ReminderEntity(
     val profileId: Long,
     val title: String,
     val note: String? = null,
-    val hour: Int,      // 0..23
-    val minute: Int,    // 0..59
+    val hour: Int,
+    val minute: Int,
     val repeatDaily: Boolean = true,
     val enabled: Boolean = true,
     val createdAtMillis: Long = System.currentTimeMillis()

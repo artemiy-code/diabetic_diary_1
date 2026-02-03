@@ -42,7 +42,6 @@ class GlucoseLineChartView @JvmOverloads constructor(
         val h = height.toFloat()
         if (w <= 0f || h <= 0f) return
 
-        // Паддинги для осей/текста
         val leftPad = 80f
         val topPad = 30f
         val rightPad = 30f
@@ -53,7 +52,6 @@ class GlucoseLineChartView @JvmOverloads constructor(
         val plotRight = w - rightPad
         val plotBottom = h - bottomPad
 
-        // Оси
         canvas.drawLine(plotLeft, plotTop, plotLeft, plotBottom, axisPaint)
         canvas.drawLine(plotLeft, plotBottom, plotRight, plotBottom, axisPaint)
 
@@ -70,11 +68,9 @@ class GlucoseLineChartView @JvmOverloads constructor(
         val maxX = points.maxOf { it.timeMillis }
         val xSpan = max(1L, maxX - minX).toFloat()
 
-        // Подписи min/max (по Y)
         canvas.drawText("max: ${format1(maxY)}", plotLeft + 40f, plotTop + 20f, textPaint)
         canvas.drawText("min: ${format1(minY)}", plotLeft + 40f, plotBottom + 40f, textPaint)
 
-        // Линия
         var prevX: Float? = null
         var prevY: Float? = null
 

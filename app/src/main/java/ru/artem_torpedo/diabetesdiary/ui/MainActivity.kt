@@ -1,4 +1,5 @@
 package ru.artem_torpedo.diabetesdiary.ui
+
 import android.Manifest
 import ru.artem_torpedo.diabetesdiary.ui.profile.ProfileViewModel
 import android.os.Bundle
@@ -85,7 +86,11 @@ class MainActivity : AppCompatActivity() {
                 if (name.length < 2) {
                     input.error = "Минимум 2 символа"
                     input.requestFocus()
-                    Toast.makeText(this, "Введите корректное имя профиля", android.widget.Toast.LENGTH_SHORT).show()
+                    Toast.makeText(
+                        this,
+                        "Введите корректное имя профиля",
+                        android.widget.Toast.LENGTH_SHORT
+                    ).show()
                     return@setOnClickListener
                 }
 

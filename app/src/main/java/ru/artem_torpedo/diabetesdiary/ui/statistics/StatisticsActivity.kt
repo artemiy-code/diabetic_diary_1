@@ -46,7 +46,6 @@ class StatisticsActivity : AppCompatActivity() {
 
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
 
-
         periodText = findViewById(R.id.periodText)
         avgText = findViewById(R.id.avgValue)
         minText = findViewById(R.id.minValue)
@@ -65,6 +64,7 @@ class StatisticsActivity : AppCompatActivity() {
                     MeasurementsActivity.start(this, profileId, profileName)
                     true
                 }
+
                 R.id.nav_statistics -> true
                 R.id.nav_products -> {
                     ProductsActivity.start(this, profileId, profileName)
@@ -75,6 +75,7 @@ class StatisticsActivity : AppCompatActivity() {
                     FoodLogActivity.start(this, profileId, profileName)
                     true
                 }
+
                 R.id.nav_reminders -> {
                     RemindersActivity.start(this, profileId, profileName)
                     true
@@ -148,7 +149,8 @@ class StatisticsActivity : AppCompatActivity() {
                 }
 
                 if (from > to) {
-                    Toast.makeText(this, "Дата начала больше даты окончания", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(this, "Дата начала больше даты окончания", Toast.LENGTH_SHORT)
+                        .show()
                     return@setOnClickListener
                 }
 
@@ -156,9 +158,7 @@ class StatisticsActivity : AppCompatActivity() {
                 dialog.dismiss()
             }
         }
-
         dialog.show()
-
     }
 
     private fun showDatePicker(onDateSelected: (Long) -> Unit) {
@@ -176,7 +176,6 @@ class StatisticsActivity : AppCompatActivity() {
             calendar.get(Calendar.MONTH),
             calendar.get(Calendar.DAY_OF_MONTH)
         )
-
         dialog.show()
     }
 

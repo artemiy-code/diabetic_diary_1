@@ -7,7 +7,6 @@ data class FoodEntryWithProduct(
     val grams: Float,
     val dateTime: Long,
     val comment: String?,
-
     val productName: String,
     val caloriesPer100g: Float,
     val carbsPer100g: Float,

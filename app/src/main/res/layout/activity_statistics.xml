@@ -10,9 +10,9 @@
         android:id="@+id/periodText"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_marginBottom="10dp"
         android:text="Период: —"
-        android:textSize="16sp"
-        android:layout_marginBottom="10dp" />
+        android:textSize="16sp" />
 
     <Button
         android:id="@+id/filterButtonStats"
@@ -23,8 +23,8 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:layout_marginTop="12dp">
+        android:layout_marginTop="12dp"
+        android:orientation="vertical">
 
         <TextView
             android:layout_width="match_parent"
@@ -35,9 +35,9 @@
             android:id="@+id/avgValue"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_marginBottom="8dp"
             android:text="—"
-            android:textSize="18sp"
-            android:layout_marginBottom="8dp" />
+            android:textSize="18sp" />
 
         <TextView
             android:layout_width="match_parent"
@@ -48,8 +48,8 @@
             android:id="@+id/minValue"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="—"
-            android:layout_marginBottom="8dp" />
+            android:layout_marginBottom="8dp"
+            android:text="—" />
 
         <TextView
             android:layout_width="match_parent"
@@ -60,8 +60,8 @@
             android:id="@+id/maxValue"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="—"
-            android:layout_marginBottom="8dp" />
+            android:layout_marginBottom="8dp"
+            android:text="—" />
 
         <TextView
             android:layout_width="match_parent"
@@ -72,8 +72,8 @@
             android:id="@+id/countValue"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="0"
-            android:layout_marginBottom="8dp" />
+            android:layout_marginBottom="8dp"
+            android:text="0" />
 
     </LinearLayout>
 
@@ -81,8 +81,8 @@
         android:id="@+id/glucoseChart"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_weight="1"
-        android:layout_marginTop="12dp" />
+        android:layout_marginTop="12dp"
+        android:layout_weight="1" />
 
     <com.google.android.material.bottomnavigation.BottomNavigationView
         android:id="@+id/bottomNavigation"

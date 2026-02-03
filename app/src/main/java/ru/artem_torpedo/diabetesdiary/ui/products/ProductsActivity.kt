@@ -41,7 +41,6 @@ class ProductsActivity : AppCompatActivity() {
 
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
 
-
         val listView: ListView = findViewById(R.id.productsList)
         val addButton: Button = findViewById(R.id.addProductButton)
 
@@ -71,15 +70,18 @@ class ProductsActivity : AppCompatActivity() {
                     MeasurementsActivity.start(this, profileId, profileName)
                     true
                 }
+
                 R.id.nav_statistics -> {
                     StatisticsActivity.start(this, profileId, profileName)
                     true
                 }
+
                 R.id.nav_products -> true
                 R.id.nav_food_log -> {
                     FoodLogActivity.start(this, profileId, profileName)
                     true
                 }
+
                 R.id.nav_reminders -> {
                     RemindersActivity.start(this, profileId, profileName)
                     true
@@ -138,13 +140,15 @@ class ProductsActivity : AppCompatActivity() {
             if (v == null) {
                 input.error = "Введите число"
                 input.requestFocus()
-                Toast.makeText(this, "Некорректное значение: $fieldLabel", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this, "Некорректное значение: $fieldLabel", Toast.LENGTH_SHORT)
+                    .show()
                 return null
             }
             if (v < 0f || v > max) {
                 input.error = "Диапазон 0–${max.toInt()}"
                 input.requestFocus()
-                Toast.makeText(this, "Значение вне диапазона: $fieldLabel", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this, "Значение вне диапазона: $fieldLabel", Toast.LENGTH_SHORT)
+                    .show()
                 return null
             }
             return v
@@ -160,28 +164,28 @@ class ProductsActivity : AppCompatActivity() {
                     return@setOnClickListener
                 }
 
-                val cal = parseRequiredFloat(caloriesInput, "Калории", 2000f) ?: return@setOnClickListener
-                val carbs = parseRequiredFloat(carbsInput, "Углеводы", 300f) ?: return@setOnClickListener
-                val prot = parseRequiredFloat(proteinInput, "Белки", 300f) ?: return@setOnClickListener
+                val cal =
+                    parseRequiredFloat(caloriesInput, "Калории", 2000f) ?: return@setOnClickListener
+                val carbs =
+                    parseRequiredFloat(carbsInput, "Углеводы", 300f) ?: return@setOnClickListener
+                val prot =
+                    parseRequiredFloat(proteinInput, "Белки", 300f) ?: return@setOnClickListener
                 val fatV = parseRequiredFloat(fatInput, "Жиры", 300f) ?: return@setOnClickListener
 
-                val entity = if (existing == null) {
-                    ProductEntity(
+                val entity = existing?.copy(
+                    name = name,
+                    caloriesPer100g = cal,
+                    carbsPer100g = carbs,
+                    proteinPer100g = prot,
+                    fatPer100g = fatV
+                )
+                    ?: ProductEntity(
                         name = name,
                         caloriesPer100g = cal,
                         carbsPer100g = carbs,
                         proteinPer100g = prot,
                         fatPer100g = fatV
                     )
-                } else {
-                    existing.copy(
-                        name = name,
-                        caloriesPer100g = cal,
-                        carbsPer100g = carbs,
-                        proteinPer100g = prot,
-                        fatPer100g = fatV
-                    )
-                }
 
                 if (existing == null) viewModel.add(entity) else viewModel.update(entity)
                 dialog.dismiss()
@@ -226,32 +230,5 @@ class ProductsActivity : AppCompatActivity() {
         startActivity(intent)
         finish()
     }
-
-    fun parseNonNegative(
-        input: EditText,
-        fieldName: String,
-        maxValue: Float
-    ): Float? {
-        val text = input.text.toString().replace(',', '.').trim()
-        val value = text.toFloatOrNull()
-
-        if (value == null) {
-            input.error = "Введите число"
-            input.requestFocus()
-            return null
-        }
-        if (value < 0f) {
-            input.error = "$fieldName не может быть отрицательным"
-            input.requestFocus()
-            return null
-        }
-        if (value > maxValue) {
-            input.error = "$fieldName выглядит слишком большим"
-            input.requestFocus()
-            return null
-        }
-        return value
-    }
-
 
 }

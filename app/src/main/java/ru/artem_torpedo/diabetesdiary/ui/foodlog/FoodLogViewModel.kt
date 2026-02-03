@@ -58,6 +58,4 @@ class FoodLogViewModel(application: Application) : AndroidViewModel(application)
         }
     }
 
-
-
 }

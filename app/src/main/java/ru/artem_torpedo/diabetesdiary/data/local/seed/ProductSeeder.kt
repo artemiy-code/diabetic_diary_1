@@ -5,6 +5,7 @@ import com.google.firebase.crashlytics.buildtools.reloc.com.google.common.reflec
 import com.google.gson.Gson
 import ru.artem_torpedo.diabetesdiary.data.local.AppDatabase
 import ru.artem_torpedo.diabetesdiary.data.local.entity.ProductEntity
+import androidx.core.content.edit
 
 object ProductSeeder {
 
@@ -34,6 +35,6 @@ object ProductSeeder {
         val db = AppDatabase.getDatabase(context)
         db.productDao().insertAll(entities)
 
-        prefs.edit().putBoolean(KEY_DONE, true).apply()
+        prefs.edit { putBoolean(KEY_DONE, true) }
     }
 }

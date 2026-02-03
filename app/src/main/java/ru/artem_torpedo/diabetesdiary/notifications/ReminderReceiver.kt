@@ -51,9 +51,8 @@ class ReminderReceiver : BroadcastReceiver() {
         val nm = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
         ensureChannel(nm)
 
-        // Открываем MainActivity -> затем MeasurementsActivity (нужен profile_id)
         val measurementsIntent = Intent(context, MeasurementsActivity::class.java).apply {
-            putExtra("profile_id", profileId) // ключ совпадает с твоими Activity.start(...)
+            putExtra("profile_id", profileId)
         }
 
         val pi: PendingIntent = TaskStackBuilder.create(context).run {
@@ -81,15 +80,13 @@ class ReminderReceiver : BroadcastReceiver() {
     }
 
     private fun ensureChannel(nm: NotificationManager) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            val channel = NotificationChannel(
-                CHANNEL_ID,
-                "Напоминания",
-                NotificationManager.IMPORTANCE_HIGH
-            )
-            channel.description = "Уведомления о приёме препаратов и самоконтроле"
-            nm.createNotificationChannel(channel)
-        }
+        val channel = NotificationChannel(
+            CHANNEL_ID,
+            "Напоминания",
+            NotificationManager.IMPORTANCE_HIGH
+        )
+        channel.description = "Уведомления о приёме препаратов и самоконтроле"
+        nm.createNotificationChannel(channel)
     }
 
     companion object {

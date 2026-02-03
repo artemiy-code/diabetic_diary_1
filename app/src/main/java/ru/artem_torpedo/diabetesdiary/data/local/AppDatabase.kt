@@ -45,8 +45,8 @@ abstract class AppDatabase : RoomDatabase() {
                     "diabetes_diary_db"
                 ).fallbackToDestructiveMigration()
                     .build().also {
-                    INSTANCE = it
-                }
+                        INSTANCE = it
+                    }
             }
         }
     }

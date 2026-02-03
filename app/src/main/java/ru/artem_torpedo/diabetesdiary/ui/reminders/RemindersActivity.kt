@@ -66,7 +66,6 @@ class RemindersActivity : AppCompatActivity() {
         adapter = ArrayAdapter(this, android.R.layout.simple_list_item_1, items)
         listView.adapter = adapter
 
-        // Тап по элементу: включить/выключить
         listView.setOnItemClickListener { _, _, position, _ ->
             val r = reminderList[position]
             val updated = r.copy(enabled = !r.enabled)
@@ -90,7 +89,6 @@ class RemindersActivity : AppCompatActivity() {
             }
         }
 
-        // Long tap: удалить
         listView.setOnItemLongClickListener { _, _, position, _ ->
             showDeleteDialog(reminderList[position])
             true
@@ -104,10 +102,22 @@ class RemindersActivity : AppCompatActivity() {
         bottomNav.selectedItemId = R.id.nav_reminders
         bottomNav.setOnItemSelectedListener { item ->
             when (item.itemId) {
-                R.id.nav_measurements -> { MeasurementsActivity.start(this, profileId, profileName); true }
-                R.id.nav_statistics -> { StatisticsActivity.start(this, profileId, profileName); true }
-                R.id.nav_products -> { ProductsActivity.start(this, profileId, profileName); true }
-                R.id.nav_food_log -> { FoodLogActivity.start(this, profileId, profileName); true }
+                R.id.nav_measurements -> {
+                    MeasurementsActivity.start(this, profileId, profileName); true
+                }
+
+                R.id.nav_statistics -> {
+                    StatisticsActivity.start(this, profileId, profileName); true
+                }
+
+                R.id.nav_products -> {
+                    ProductsActivity.start(this, profileId, profileName); true
+                }
+
+                R.id.nav_food_log -> {
+                    FoodLogActivity.start(this, profileId, profileName); true
+                }
+
                 R.id.nav_reminders -> true
                 else -> false
             }

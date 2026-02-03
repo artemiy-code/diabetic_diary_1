@@ -20,16 +20,16 @@
             android:id="@+id/gramsInput"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
             android:hint="Граммы"
-            android:inputType="numberDecimal"
-            android:layout_marginTop="10dp" />
+            android:inputType="numberDecimal" />
 
         <EditText
             android:id="@+id/commentInput"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="Комментарий (опционально)"
-            android:layout_marginTop="10dp" />
+            android:layout_marginTop="10dp"
+            android:hint="Комментарий" />
 
     </LinearLayout>
 </ScrollView>
