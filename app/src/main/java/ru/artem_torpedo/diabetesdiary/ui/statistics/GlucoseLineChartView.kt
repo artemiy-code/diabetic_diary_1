@@ -6,7 +6,6 @@ import android.graphics.Paint
 import android.util.AttributeSet
 import android.view.View
 import kotlin.math.max
-import kotlin.math.min
 
 data class ChartPoint(val timeMillis: Long, val glucose: Float)
 
@@ -47,16 +46,14 @@ class GlucoseLineChartView @JvmOverloads constructor(
         val rightPad = 30f
         val bottomPad = 60f
 
-        val plotLeft = leftPad
-        val plotTop = topPad
         val plotRight = w - rightPad
         val plotBottom = h - bottomPad
 
-        canvas.drawLine(plotLeft, plotTop, plotLeft, plotBottom, axisPaint)
-        canvas.drawLine(plotLeft, plotBottom, plotRight, plotBottom, axisPaint)
+        canvas.drawLine(leftPad, topPad, leftPad, plotBottom, axisPaint)
+        canvas.drawLine(leftPad, plotBottom, plotRight, plotBottom, axisPaint)
 
         if (points.isEmpty()) {
-            canvas.drawText("    Нет данных за период", plotLeft, plotTop + 50f, textPaint)
+            canvas.drawText("    Нет данных за период", leftPad, topPad + 50f, textPaint)
             return
         }
 
@@ -68,15 +65,15 @@ class GlucoseLineChartView @JvmOverloads constructor(
         val maxX = points.maxOf { it.timeMillis }
         val xSpan = max(1L, maxX - minX).toFloat()
 
-        canvas.drawText("max: ${format1(maxY)}", plotLeft + 40f, plotTop + 20f, textPaint)
-        canvas.drawText("min: ${format1(minY)}", plotLeft + 40f, plotBottom + 40f, textPaint)
+        canvas.drawText("max: ${format1(maxY)}", leftPad + 40f, topPad + 20f, textPaint)
+        canvas.drawText("min: ${format1(minY)}", leftPad + 40f, plotBottom + 40f, textPaint)
 
         var prevX: Float? = null
         var prevY: Float? = null
 
         for (p in points) {
-            val x = plotLeft + ((p.timeMillis - minX).toFloat() / xSpan) * (plotRight - plotLeft)
-            val y = plotBottom - ((p.glucose - minY) / ySpan) * (plotBottom - plotTop)
+            val x = leftPad + ((p.timeMillis - minX).toFloat() / xSpan) * (plotRight - leftPad)
+            val y = plotBottom - ((p.glucose - minY) / ySpan) * (plotBottom - topPad)
 
             if (prevX != null && prevY != null) {
                 canvas.drawLine(prevX, prevY, x, y, linePaint)

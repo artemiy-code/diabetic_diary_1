@@ -144,7 +144,7 @@ class ProductsActivity : AppCompatActivity() {
                     .show()
                 return null
             }
-            if (v < 0f || v > max) {
+            if (v !in 0f..max) {
                 input.error = "Диапазон 0–${max.toInt()}"
                 input.requestFocus()
                 Toast.makeText(this, "Значение вне диапазона: $fieldLabel", Toast.LENGTH_SHORT)
