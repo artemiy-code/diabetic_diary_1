@@ -360,11 +360,6 @@ class FoodLogActivity : AppCompatActivity() {
         return formatter.format(java.util.Date(timeMillis))
     }
 
-    private fun formatOnlyDate(timeMillis: Long): String {
-        val formatter = java.text.SimpleDateFormat("dd.MM.yyyy", java.util.Locale.getDefault())
-        return formatter.format(java.util.Date(timeMillis))
-    }
-
     private fun fmt1(v: Float): String = String.format(java.util.Locale.getDefault(), "%.1f", v)
 
     companion object {
