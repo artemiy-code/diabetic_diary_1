@@ -7,27 +7,27 @@ import android.widget.Button
 import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.viewModels
-import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import com.google.android.material.bottomnavigation.BottomNavigationView
+import com.google.android.material.datepicker.MaterialDatePicker
 import ru.artem_torpedo.diabetesdiary.R
 import ru.artem_torpedo.diabetesdiary.ui.MainActivity
 import ru.artem_torpedo.diabetesdiary.ui.foodlog.FoodLogActivity
 import ru.artem_torpedo.diabetesdiary.ui.measurement.MeasurementsActivity
 import ru.artem_torpedo.diabetesdiary.ui.products.ProductsActivity
 import ru.artem_torpedo.diabetesdiary.ui.reminders.RemindersActivity
-import java.text.SimpleDateFormat
 import java.util.Calendar
-import java.util.Date
 import java.util.Locale
+import java.util.TimeZone
 
 class StatisticsActivity : AppCompatActivity() {
 
     private val viewModel: StatisticsViewModel by viewModels()
 
     private var fromDateMillis: Long? = null
+    private var isCustomFilterActive = false
     private var toDateMillis: Long? = null
-
+    private lateinit var filterButton: Button
     private lateinit var periodText: TextView
     private lateinit var avgText: TextView
     private lateinit var minText: TextView
@@ -53,8 +53,19 @@ class StatisticsActivity : AppCompatActivity() {
         countText = findViewById(R.id.countValue)
         chart = findViewById(R.id.glucoseChart)
 
-        val filterButton: Button = findViewById(R.id.filterButtonStats)
-        filterButton.setOnClickListener { showFilterDialog(profileId) }
+        filterButton = findViewById(R.id.filterButtonStats)
+
+        filterButton.setOnClickListener {
+            if (isCustomFilterActive) {
+                clearDateFilter(profileId)
+            } else {
+                showFilterDialog(profileId)
+            }
+        }
+
+        updateFilterButtonState()
+
+        updateFilterButtonState()
 
         val bottomNav: BottomNavigationView = findViewById(R.id.bottomNavigation)
         bottomNav.selectedItemId = R.id.nav_statistics
@@ -98,8 +109,10 @@ class StatisticsActivity : AppCompatActivity() {
         val now = System.currentTimeMillis()
         fromDateMillis = startOfDay(now - 7L * 24L * 60L * 60L * 1000L)
         toDateMillis = endOfDay(now)
+        isCustomFilterActive = false
 
         load(profileId)
+        updateFilterButtonState()
     }
 
     private fun load(profileId: Long) {
@@ -109,80 +122,89 @@ class StatisticsActivity : AppCompatActivity() {
     }
 
     private fun showFilterDialog(profileId: Long) {
-        val dialogView = layoutInflater.inflate(R.layout.dialog_date_filter, null)
+        val picker = MaterialDatePicker.Builder.dateRangePicker()
+            .setTitleText("Выберите период")
+            .build()
 
-        val fromButton = dialogView.findViewById<Button>(R.id.fromDateButton)
-        val toButton = dialogView.findViewById<Button>(R.id.toDateButton)
+        picker.addOnPositiveButtonClickListener { selection ->
+            val startUtc = selection.first
+            val endUtc = selection.second
 
-        fromDateMillis?.let { fromButton.text = "С даты: ${formatOnlyDate(it)}" }
-        toDateMillis?.let { toButton.text = "По дату: ${formatOnlyDate(it)}" }
-
-        fromButton.setOnClickListener {
-            showDatePicker { selectedDate ->
-                fromDateMillis = startOfDay(selectedDate)
-                fromButton.text = "С даты: ${formatOnlyDate(selectedDate)}"
+            if (startUtc == null || endUtc == null) {
+                Toast.makeText(this, "Выберите обе даты", Toast.LENGTH_SHORT).show()
+                return@addOnPositiveButtonClickListener
             }
+
+            fromDateMillis = utcDateToLocalStartOfDay(startUtc)
+            toDateMillis = utcDateToLocalEndOfDay(endUtc)
+            isCustomFilterActive = true
+
+            updateFilterButtonState()
+            load(profileId)
         }
 
-        toButton.setOnClickListener {
-            showDatePicker { selectedDate ->
-                toDateMillis = endOfDay(selectedDate)
-                toButton.text = "По дату: ${formatOnlyDate(selectedDate)}"
-            }
-        }
+        picker.show(supportFragmentManager, "statistics_date_range_picker")
+    }
+    private fun clearDateFilter(profileId: Long) {
+        val now = System.currentTimeMillis()
+        fromDateMillis = startOfDay(now - 7L * 24L * 60L * 60L * 1000L)
+        toDateMillis = endOfDay(now)
+        isCustomFilterActive = false
 
-        val dialog = AlertDialog.Builder(this)
-            .setTitle("Период статистики")
-            .setView(dialogView)
-            .setPositiveButton("Применить", null)
-            .setNegativeButton("Отмена", null)
-            .create()
+        updateFilterButtonState()
+        load(profileId)
 
-        dialog.setOnShowListener {
-            dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener {
-                val from = fromDateMillis
-                val to = toDateMillis
-
-                if (from == null || to == null) {
-                    Toast.makeText(this, "Выберите обе даты", Toast.LENGTH_SHORT).show()
-                    return@setOnClickListener
-                }
-
-                if (from > to) {
-                    Toast.makeText(this, "Дата начала больше даты окончания", Toast.LENGTH_SHORT)
-                        .show()
-                    return@setOnClickListener
-                }
-
-                load(profileId)
-                dialog.dismiss()
-            }
-        }
-        dialog.show()
+        Toast.makeText(this, "Фильтр сброшен", Toast.LENGTH_SHORT).show()
     }
 
-    private fun showDatePicker(onDateSelected: (Long) -> Unit) {
-        val calendar = Calendar.getInstance()
+    private fun updateFilterButtonState() {
+        if (!::filterButton.isInitialized) return
 
-        val dialog = android.app.DatePickerDialog(
-            this,
-            { _, year, month, dayOfMonth ->
-                val selectedCalendar = Calendar.getInstance()
-                selectedCalendar.set(year, month, dayOfMonth, 0, 0, 0)
-                selectedCalendar.set(Calendar.MILLISECOND, 0)
-                onDateSelected(selectedCalendar.timeInMillis)
-            },
-            calendar.get(Calendar.YEAR),
-            calendar.get(Calendar.MONTH),
-            calendar.get(Calendar.DAY_OF_MONTH)
+        if (isCustomFilterActive) {
+            filterButton.text = "Сбросить фильтр"
+        } else {
+            filterButton.text = "Фильтр по дате"
+        }
+    }
+
+    private fun utcDateToLocalStartOfDay(utcMillis: Long): Long {
+        val utcCalendar = Calendar.getInstance(TimeZone.getTimeZone("UTC"))
+        utcCalendar.timeInMillis = utcMillis
+
+        val localCalendar = Calendar.getInstance()
+        localCalendar.set(
+            utcCalendar.get(Calendar.YEAR),
+            utcCalendar.get(Calendar.MONTH),
+            utcCalendar.get(Calendar.DAY_OF_MONTH),
+            0,
+            0,
+            0
         )
-        dialog.show()
+        localCalendar.set(Calendar.MILLISECOND, 0)
+
+        return localCalendar.timeInMillis
     }
 
-    private fun formatOnlyDate(timeMillis: Long): String {
-        val formatter = SimpleDateFormat("dd.MM.yyyy", Locale.getDefault())
-        return formatter.format(Date(timeMillis))
+    private fun utcDateToLocalEndOfDay(utcMillis: Long): Long {
+        val utcCalendar = Calendar.getInstance(TimeZone.getTimeZone("UTC"))
+        utcCalendar.timeInMillis = utcMillis
+
+        val localCalendar = Calendar.getInstance()
+        localCalendar.set(
+            utcCalendar.get(Calendar.YEAR),
+            utcCalendar.get(Calendar.MONTH),
+            utcCalendar.get(Calendar.DAY_OF_MONTH),
+            23,
+            59,
+            59
+        )
+        localCalendar.set(Calendar.MILLISECOND, 999)
+
+        return localCalendar.timeInMillis
     }
+
+
+
 
     private fun startOfDay(timeMillis: Long): Long {
         val cal = Calendar.getInstance()

@@ -3,7 +3,6 @@ package ru.artem_torpedo.diabetesdiary.ui
 import android.Manifest
 import ru.artem_torpedo.diabetesdiary.ui.profile.ProfileViewModel
 import android.os.Bundle
-import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import ru.artem_torpedo.diabetesdiary.R
 import android.widget.ArrayAdapter
@@ -89,7 +88,7 @@ class MainActivity : AppCompatActivity() {
                     Toast.makeText(
                         this,
                         "Введите корректное имя профиля",
-                        android.widget.Toast.LENGTH_SHORT
+                        Toast.LENGTH_SHORT
                     ).show()
                     return@setOnClickListener
                 }

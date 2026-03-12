@@ -8,6 +8,7 @@ import androidx.activity.viewModels
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import com.google.android.material.bottomnavigation.BottomNavigationView
+import com.google.android.material.datepicker.MaterialDatePicker
 import ru.artem_torpedo.diabetesdiary.R
 import ru.artem_torpedo.diabetesdiary.data.local.entity.FoodEntryWithProduct
 import ru.artem_torpedo.diabetesdiary.ui.MainActivity
@@ -15,6 +16,8 @@ import ru.artem_torpedo.diabetesdiary.ui.measurement.MeasurementsActivity
 import ru.artem_torpedo.diabetesdiary.ui.products.ProductsActivity
 import ru.artem_torpedo.diabetesdiary.ui.reminders.RemindersActivity
 import ru.artem_torpedo.diabetesdiary.ui.statistics.StatisticsActivity
+import java.util.Calendar
+import java.util.TimeZone
 
 class FoodLogActivity : AppCompatActivity() {
 
@@ -22,6 +25,7 @@ class FoodLogActivity : AppCompatActivity() {
 
     private var fromDateMillis: Long? = null
     private var toDateMillis: Long? = null
+    private lateinit var filterButton: Button
 
     private var foodList: List<FoodEntryWithProduct> = emptyList()
     private lateinit var adapter: ArrayAdapter<String>
@@ -46,7 +50,18 @@ class FoodLogActivity : AppCompatActivity() {
 
         val listView: ListView = findViewById(R.id.foodLogList)
         val addButton: Button = findViewById(R.id.addFoodEntryButton)
-        val filterButton: Button = findViewById(R.id.filterFoodButton)
+
+        filterButton = findViewById(R.id.filterFoodButton)
+
+        filterButton.setOnClickListener {
+            if (fromDateMillis == null || toDateMillis == null) {
+                showFilterDialog()
+            } else {
+                clearDateFilter()
+            }
+        }
+
+        updateFilterButtonState()
 
         adapter = ArrayAdapter(this, android.R.layout.simple_list_item_1, items)
         listView.adapter = adapter
@@ -59,10 +74,6 @@ class FoodLogActivity : AppCompatActivity() {
 
         addButton.setOnClickListener {
             showAddFoodDialog()
-        }
-
-        filterButton.setOnClickListener {
-            showFilterDialog()
         }
 
         val bottomNav: BottomNavigationView = findViewById(R.id.bottomNavigation)
@@ -253,51 +264,83 @@ class FoodLogActivity : AppCompatActivity() {
 
 
     private fun showFilterDialog() {
-        val dialogView = layoutInflater.inflate(R.layout.dialog_date_filter, null)
-        val fromButton = dialogView.findViewById<Button>(R.id.fromDateButton)
-        val toButton = dialogView.findViewById<Button>(R.id.toDateButton)
+        val picker = MaterialDatePicker.Builder.dateRangePicker()
+            .setTitleText("Выберите период")
+            .build()
 
-        fromButton.setOnClickListener {
-            showDatePicker { selected ->
-                fromDateMillis = selected
-                fromButton.text = "С даты: ${formatOnlyDate(selected)}"
+        picker.addOnPositiveButtonClickListener { selection ->
+            val startUtc = selection.first
+            val endUtc = selection.second
+
+            if (startUtc == null || endUtc == null) {
+                Toast.makeText(this, "Выберите обе даты", Toast.LENGTH_SHORT).show()
+                return@addOnPositiveButtonClickListener
             }
+
+            fromDateMillis = utcDateToLocalStartOfDay(startUtc)
+            toDateMillis = utcDateToLocalEndOfDay(endUtc)
+
+            updateFilterButtonState()
+            viewModel.loadFoodLogByDate(profileId, fromDateMillis!!, toDateMillis!!)
         }
 
-        toButton.setOnClickListener {
-            showDatePicker { selected ->
-                toDateMillis = selected + (24 * 60 * 60 * 1000 - 1)
-                toButton.text = "По дату: ${formatOnlyDate(selected)}"
-            }
+        picker.show(supportFragmentManager, "foodlog_date_range_picker")
+    }
+
+    private fun clearDateFilter() {
+        fromDateMillis = null
+        toDateMillis = null
+
+        updateFilterButtonState()
+        viewModel.loadFoodLog(profileId)
+
+        Toast.makeText(this, "Фильтр сброшен", Toast.LENGTH_SHORT).show()
+    }
+
+    private fun updateFilterButtonState() {
+        if (!::filterButton.isInitialized) return
+
+        if (fromDateMillis == null || toDateMillis == null) {
+            filterButton.text = "Фильтр по дате"
+        } else {
+            filterButton.text = "Сбросить фильтр"
         }
+    }
 
-        val dialog = AlertDialog.Builder(this)
-            .setTitle("Фильтр по дате")
-            .setView(dialogView)
-            .setPositiveButton("Применить", null)
-            .setNegativeButton("Отмена", null)
-            .create()
+    private fun utcDateToLocalStartOfDay(utcMillis: Long): Long {
+        val utcCalendar = Calendar.getInstance(TimeZone.getTimeZone("UTC"))
+        utcCalendar.timeInMillis = utcMillis
 
-        dialog.setOnShowListener {
-            dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener {
-                val from = fromDateMillis
-                val to = toDateMillis
+        val localCalendar = Calendar.getInstance()
+        localCalendar.set(
+            utcCalendar.get(Calendar.YEAR),
+            utcCalendar.get(Calendar.MONTH),
+            utcCalendar.get(Calendar.DAY_OF_MONTH),
+            0,
+            0,
+            0
+        )
+        localCalendar.set(Calendar.MILLISECOND, 0)
 
-                if (from == null || to == null) {
-                    Toast.makeText(this, "Выберите обе даты", Toast.LENGTH_SHORT).show()
-                    return@setOnClickListener
-                }
-                if (from > to) {
-                    Toast.makeText(this, "Дата начала больше даты окончания", Toast.LENGTH_SHORT)
-                        .show()
-                    return@setOnClickListener
-                }
+        return localCalendar.timeInMillis
+    }
 
-                viewModel.loadFoodLogByDate(profileId, from, to)
-                dialog.dismiss()
-            }
-        }
-        dialog.show()
+    private fun utcDateToLocalEndOfDay(utcMillis: Long): Long {
+        val utcCalendar = Calendar.getInstance(TimeZone.getTimeZone("UTC"))
+        utcCalendar.timeInMillis = utcMillis
+
+        val localCalendar = Calendar.getInstance()
+        localCalendar.set(
+            utcCalendar.get(Calendar.YEAR),
+            utcCalendar.get(Calendar.MONTH),
+            utcCalendar.get(Calendar.DAY_OF_MONTH),
+            23,
+            59,
+            59
+        )
+        localCalendar.set(Calendar.MILLISECOND, 999)
+
+        return localCalendar.timeInMillis
     }
 
     private fun showDeleteDialog(entryId: Long) {
@@ -320,24 +363,6 @@ class FoodLogActivity : AppCompatActivity() {
     private fun formatOnlyDate(timeMillis: Long): String {
         val formatter = java.text.SimpleDateFormat("dd.MM.yyyy", java.util.Locale.getDefault())
         return formatter.format(java.util.Date(timeMillis))
-    }
-
-    private fun showDatePicker(onDateSelected: (Long) -> Unit) {
-        val calendar = java.util.Calendar.getInstance()
-
-        val dialog = android.app.DatePickerDialog(
-            this,
-            { _, year, month, dayOfMonth ->
-                val selectedCalendar = java.util.Calendar.getInstance()
-                selectedCalendar.set(year, month, dayOfMonth, 0, 0, 0)
-                selectedCalendar.set(java.util.Calendar.MILLISECOND, 0)
-                onDateSelected(selectedCalendar.timeInMillis)
-            },
-            calendar.get(java.util.Calendar.YEAR),
-            calendar.get(java.util.Calendar.MONTH),
-            calendar.get(java.util.Calendar.DAY_OF_MONTH)
-        )
-        dialog.show()
     }
 
     private fun fmt1(v: Float): String = String.format(java.util.Locale.getDefault(), "%.1f", v)

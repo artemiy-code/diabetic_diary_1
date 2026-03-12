@@ -12,13 +12,15 @@ import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import ru.artem_torpedo.diabetesdiary.R
 import ru.artem_torpedo.diabetesdiary.data.local.entity.MeasurementEntity
-
 import com.google.android.material.bottomnavigation.BottomNavigationView
+import com.google.android.material.datepicker.MaterialDatePicker
 import ru.artem_torpedo.diabetesdiary.ui.MainActivity
 import ru.artem_torpedo.diabetesdiary.ui.foodlog.FoodLogActivity
 import ru.artem_torpedo.diabetesdiary.ui.products.ProductsActivity
 import ru.artem_torpedo.diabetesdiary.ui.reminders.RemindersActivity
 import ru.artem_torpedo.diabetesdiary.ui.statistics.StatisticsActivity
+import java.util.Calendar
+import java.util.TimeZone
 
 
 class MeasurementsActivity : AppCompatActivity() {
@@ -27,6 +29,7 @@ class MeasurementsActivity : AppCompatActivity() {
 
     private var fromDateMillis: Long? = null
     private var toDateMillis: Long? = null
+    private lateinit var filterButton: Button
 
     private var measurementList: List<MeasurementEntity> = emptyList()
 
@@ -80,10 +83,17 @@ class MeasurementsActivity : AppCompatActivity() {
         }
 
 
-        val filterButton: Button = findViewById(R.id.filterButton)
+        filterButton = findViewById(R.id.filterButton)
+
         filterButton.setOnClickListener {
-            showFilterDialog(profileId)
+            if (fromDateMillis == null || toDateMillis == null) {
+                showFilterDialog(profileId)
+            } else {
+                clearDateFilter(profileId)
+            }
         }
+
+        updateFilterButtonState()
 
         val listView: ListView = findViewById(R.id.measurementsList)
         val addButton: Button = findViewById(R.id.addMeasurementButton)
@@ -179,7 +189,7 @@ class MeasurementsActivity : AppCompatActivity() {
                             Toast.makeText(this, "Некорректный инсулин", Toast.LENGTH_SHORT).show()
                             return@setOnClickListener
                         }
-                        if (v < 0f || v > 200f) {
+                        if (v !in 0f..200f) {
                             insulinInput.error = "Диапазон 0–200"
                             insulinInput.requestFocus()
                             Toast.makeText(this, "Инсулин вне диапазона", Toast.LENGTH_SHORT).show()
@@ -199,7 +209,7 @@ class MeasurementsActivity : AppCompatActivity() {
                             Toast.makeText(this, "Некорректные ХЕ", Toast.LENGTH_SHORT).show()
                             return@setOnClickListener
                         }
-                        if (v < 0f || v > 50f) {
+                        if (v !in 0f..50f) {
                             breadInput.error = "Диапазон 0–50"
                             breadInput.requestFocus()
                             Toast.makeText(this, "ХЕ вне диапазона", Toast.LENGTH_SHORT).show()
@@ -236,52 +246,80 @@ class MeasurementsActivity : AppCompatActivity() {
     }
 
     private fun showFilterDialog(profileId: Long) {
-        val dialogView = layoutInflater.inflate(R.layout.dialog_date_filter, null)
+        val picker = MaterialDatePicker.Builder.dateRangePicker()
+            .setTitleText("Выберите период")
+            .build()
 
-        val fromButton = dialogView.findViewById<Button>(R.id.fromDateButton)
-        val toButton = dialogView.findViewById<Button>(R.id.toDateButton)
+        picker.addOnPositiveButtonClickListener { selection ->
+            val startUtc = selection.first
+            val endUtc = selection.second
 
-        fromButton.setOnClickListener {
-            showDatePicker { selectedDate ->
-                fromDateMillis = selectedDate
-                fromButton.text = "С даты: ${formatOnlyDate(selectedDate)}"
+            if (startUtc == null || endUtc == null) {
+                Toast.makeText(this, "Выберите обе даты", Toast.LENGTH_SHORT).show()
+                return@addOnPositiveButtonClickListener
             }
+
+            fromDateMillis = utcDateToLocalStartOfDay(startUtc)
+            toDateMillis = utcDateToLocalEndOfDay(endUtc)
+
+            updateFilterButtonState()
+            viewModel.loadMeasurementsByDate(profileId, fromDateMillis!!, toDateMillis!!)
         }
 
-        toButton.setOnClickListener {
-            showDatePicker { selectedDate ->
-                toDateMillis = selectedDate + (24 * 60 * 60 * 1000 - 1)
-                toButton.text = "По дату: ${formatOnlyDate(selectedDate)}"
-            }
+        picker.show(supportFragmentManager, "measurement_date_range_picker")
+    }
+
+    private fun clearDateFilter(profileId: Long) {
+        fromDateMillis = null
+        toDateMillis = null
+        updateFilterButtonState()
+        viewModel.loadMeasurements(profileId)
+        Toast.makeText(this, "Фильтр сброшен", Toast.LENGTH_SHORT).show()
+    }
+    private fun updateFilterButtonState() {
+        if (!::filterButton.isInitialized) return
+
+        if (fromDateMillis == null || toDateMillis == null) {
+            filterButton.text = "Фильтр по дате"
+        } else {
+            filterButton.text = "Сбросить фильтр"
         }
+    }
 
-        val dialog = AlertDialog.Builder(this)
-            .setTitle("Фильтр по дате")
-            .setView(dialogView)
-            .setPositiveButton("Применить", null)
-            .setNegativeButton("Отмена", null)
-            .create()
+    private fun utcDateToLocalStartOfDay(utcMillis: Long): Long {
+        val utcCalendar = Calendar.getInstance(TimeZone.getTimeZone("UTC"))
+        utcCalendar.timeInMillis = utcMillis
 
-        dialog.setOnShowListener {
-            dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener {
-                val from = fromDateMillis
-                val to = toDateMillis
+        val localCalendar = Calendar.getInstance()
+        localCalendar.set(
+            utcCalendar.get(Calendar.YEAR),
+            utcCalendar.get(Calendar.MONTH),
+            utcCalendar.get(Calendar.DAY_OF_MONTH),
+            0,
+            0,
+            0
+        )
+        localCalendar.set(Calendar.MILLISECOND, 0)
 
-                if (from == null || to == null) {
-                    Toast.makeText(this, "Выберите обе даты", Toast.LENGTH_SHORT).show()
-                    return@setOnClickListener
-                }
-                if (from > to) {
-                    Toast.makeText(this, "Дата начала больше даты окончания", Toast.LENGTH_SHORT)
-                        .show()
-                    return@setOnClickListener
-                }
+        return localCalendar.timeInMillis
+    }
 
-                viewModel.loadMeasurementsByDate(profileId, from, to)
-                dialog.dismiss()
-            }
-        }
-        dialog.show()
+    private fun utcDateToLocalEndOfDay(utcMillis: Long): Long {
+        val utcCalendar = Calendar.getInstance(TimeZone.getTimeZone("UTC"))
+        utcCalendar.timeInMillis = utcMillis
+
+        val localCalendar = Calendar.getInstance()
+        localCalendar.set(
+            utcCalendar.get(Calendar.YEAR),
+            utcCalendar.get(Calendar.MONTH),
+            utcCalendar.get(Calendar.DAY_OF_MONTH),
+            23,
+            59,
+            59
+        )
+        localCalendar.set(Calendar.MILLISECOND, 999)
+
+        return localCalendar.timeInMillis
     }
 
     private fun showDeleteDialog(
@@ -298,34 +336,6 @@ class MeasurementsActivity : AppCompatActivity() {
             .show()
     }
 
-
-    private fun showDatePicker(onDateSelected: (Long) -> Unit) {
-        val calendar = java.util.Calendar.getInstance()
-
-        val dialog = android.app.DatePickerDialog(
-            this,
-            { _, year, month, dayOfMonth ->
-                val selectedCalendar = java.util.Calendar.getInstance()
-                selectedCalendar.set(year, month, dayOfMonth, 0, 0, 0)
-                selectedCalendar.set(java.util.Calendar.MILLISECOND, 0)
-
-                onDateSelected(selectedCalendar.timeInMillis)
-            },
-            calendar.get(java.util.Calendar.YEAR),
-            calendar.get(java.util.Calendar.MONTH),
-            calendar.get(java.util.Calendar.DAY_OF_MONTH)
-        )
-
-        dialog.show()
-    }
-
-    private fun formatOnlyDate(timeMillis: Long): String {
-        val formatter = java.text.SimpleDateFormat(
-            "dd.MM.yyyy",
-            java.util.Locale.getDefault()
-        )
-        return formatter.format(java.util.Date(timeMillis))
-    }
 
     companion object {
         private const val EXTRA_PROFILE_ID = "profile_id"
