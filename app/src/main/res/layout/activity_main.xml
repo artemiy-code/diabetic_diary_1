@@ -18,6 +18,8 @@
         android:id="@+id/profileListView"
         android:layout_width="match_parent"
         android:layout_height="0dp"
+        android:divider="@android:color/darker_gray"
+        android:dividerHeight="1dp"
         android:layout_weight="1" />
 
     <Button
