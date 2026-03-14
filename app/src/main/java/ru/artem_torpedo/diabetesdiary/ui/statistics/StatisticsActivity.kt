@@ -19,6 +19,14 @@ import ru.artem_torpedo.diabetesdiary.ui.reminders.RemindersActivity
 import java.util.Calendar
 import java.util.Locale
 import java.util.TimeZone
+import com.github.mikephil.charting.charts.LineChart
+import com.github.mikephil.charting.components.XAxis
+import com.github.mikephil.charting.data.Entry
+import com.github.mikephil.charting.data.LineData
+import com.github.mikephil.charting.data.LineDataSet
+import com.github.mikephil.charting.formatter.ValueFormatter
+import java.text.SimpleDateFormat
+import java.util.Date
 
 class StatisticsActivity : AppCompatActivity() {
 
@@ -33,7 +41,7 @@ class StatisticsActivity : AppCompatActivity() {
     private lateinit var minText: TextView
     private lateinit var maxText: TextView
     private lateinit var countText: TextView
-    private lateinit var chart: GlucoseLineChartView
+    private lateinit var chart: LineChart
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -52,6 +60,7 @@ class StatisticsActivity : AppCompatActivity() {
         maxText = findViewById(R.id.maxValue)
         countText = findViewById(R.id.countValue)
         chart = findViewById(R.id.glucoseChart)
+        setupChart()
 
         filterButton = findViewById(R.id.filterButtonStats)
 
@@ -102,7 +111,7 @@ class StatisticsActivity : AppCompatActivity() {
             minText.text = state.minGlucose?.let { format1(it) } ?: "—"
             maxText.text = state.maxGlucose?.let { format1(it) } ?: "—"
             countText.text = state.count.toString()
-            chart.setMeasurements(state.points)
+            renderChart(state.points)
         }
 
         // по умолчанию стоит стата за последние 7 дней
@@ -113,6 +122,89 @@ class StatisticsActivity : AppCompatActivity() {
 
         load(profileId)
         updateFilterButtonState()
+    }
+
+    private fun setupChart() {
+        chart.description.isEnabled = false
+        chart.legend.isEnabled = false
+        chart.setTouchEnabled(true)
+        chart.isDragEnabled = true
+        chart.setScaleEnabled(true)
+        chart.setPinchZoom(true)
+        chart.setNoDataText("Нет данных за период")
+
+        chart.axisRight.isEnabled = false
+
+        // Добавляем отступы, чтобы подписи по Y не уезжали за экран
+        chart.minOffset = 14f
+
+        val xAxis = chart.xAxis
+        xAxis.position = XAxis.XAxisPosition.BOTTOM
+        xAxis.granularity = 1f
+        xAxis.setDrawGridLines(false)
+
+        // Убираем текстовые метки по оси X
+        xAxis.setDrawLabels(false)
+        xAxis.setDrawAxisLine(true)
+
+        val leftAxis = chart.axisLeft
+        leftAxis.axisMinimum = 0f
+        leftAxis.setDrawGridLines(true)
+        leftAxis.granularity = 1f
+
+        // Чтобы значения по Y всегда помещались
+        leftAxis.setDrawAxisLine(true)
+        leftAxis.setDrawZeroLine(false)
+    }
+
+    private fun renderChart(points: List<ChartPoint>) {
+        if (points.isEmpty()) {
+            chart.clear()
+            chart.invalidate()
+            return
+        }
+
+        val sortedPoints = points.sortedBy { it.timeMillis }
+
+        val entries = sortedPoints.mapIndexed { index, point ->
+            Entry(index.toFloat(), point.glucose)
+        }
+
+        val dataSet = LineDataSet(entries, "Glucose").apply {
+            lineWidth = 2f
+            circleRadius = 4f
+            setDrawCircles(true)
+            setDrawValues(false)
+            mode = LineDataSet.Mode.LINEAR
+            setDrawHorizontalHighlightIndicator(false)
+        }
+
+        val lineData = LineData(dataSet)
+        chart.data = lineData
+
+        // Полностью убираем подписи времени по оси X
+        chart.xAxis.valueFormatter = object : ValueFormatter() {
+            override fun getFormattedValue(value: Float): String = ""
+        }
+
+        val minY = sortedPoints.minOf { it.glucose }
+        val maxY = sortedPoints.maxOf { it.glucose }
+
+        // Делаем аккуратный диапазон оси Y с запасом
+        val axisMin = (kotlin.math.floor(minY.toDouble()).toFloat() - 1f).coerceAtLeast(0f)
+        val axisMax = kotlin.math.ceil(maxY.toDouble()).toFloat() + 1f
+
+        chart.axisLeft.axisMinimum = axisMin
+        chart.axisLeft.axisMaximum = axisMax
+
+        // Если точек мало, показываем все
+        // Если много, пользователь сможет скроллить
+        chart.setVisibleXRangeMaximum(6f)
+        chart.moveViewToX((entries.size - 1).coerceAtLeast(0).toFloat())
+
+        chart.marker = GlucoseMarkerView(this, R.layout.view_glucose_marker, sortedPoints)
+
+        chart.invalidate()
     }
 
     private fun load(profileId: Long) {

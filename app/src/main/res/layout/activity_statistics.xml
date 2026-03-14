@@ -92,12 +92,13 @@
             android:text="0" />
     </LinearLayout>
 
-    <ru.artem_torpedo.diabetesdiary.ui.statistics.GlucoseLineChartView
+    <com.github.mikephil.charting.charts.LineChart
         android:id="@+id/glucoseChart"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        android:layout_marginTop="12dp"
+        android:layout_marginTop="10dp"
         android:layout_marginBottom="12dp"
+        android:layout_marginHorizontal="5dp"
         app:layout_constraintTop_toBottomOf="@id/statisticsInfoBlock"
         app:layout_constraintBottom_toTopOf="@id/bottomNavigation"
         app:layout_constraintStart_toStartOf="parent"
