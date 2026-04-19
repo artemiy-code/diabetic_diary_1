@@ -171,10 +171,10 @@ class MeasurementsActivity : AppCompatActivity() {
                     Toast.makeText(this, "Введите корректный сахар", Toast.LENGTH_SHORT).show()
                     return@setOnClickListener
                 }
-                if (glucose <= 0f || glucose > 40f) {
-                    glucoseInput.error = "Диапазон 0–40"
+                if (glucose <= 1f || glucose > 30f) {
+                    glucoseInput.error = "Диапазон 1–30"
                     glucoseInput.requestFocus()
-                    Toast.makeText(this, "Сахар должен быть в диапазоне 0–40", Toast.LENGTH_SHORT)
+                    Toast.makeText(this, "Аномальный сахар", Toast.LENGTH_SHORT)
                         .show()
                     return@setOnClickListener
                 }
@@ -189,10 +189,10 @@ class MeasurementsActivity : AppCompatActivity() {
                             Toast.makeText(this, "Некорректный инсулин", Toast.LENGTH_SHORT).show()
                             return@setOnClickListener
                         }
-                        if (v !in 0f..200f) {
-                            insulinInput.error = "Диапазон 0–200"
+                        if (v !in 1f..100f) {
+                            insulinInput.error = "Диапазон 1–100"
                             insulinInput.requestFocus()
-                            Toast.makeText(this, "Инсулин вне диапазона", Toast.LENGTH_SHORT).show()
+                            Toast.makeText(this, "Аномальный инсулин", Toast.LENGTH_SHORT).show()
                             return@setOnClickListener
                         }
                         v
@@ -209,10 +209,10 @@ class MeasurementsActivity : AppCompatActivity() {
                             Toast.makeText(this, "Некорректные ХЕ", Toast.LENGTH_SHORT).show()
                             return@setOnClickListener
                         }
-                        if (v !in 0f..50f) {
-                            breadInput.error = "Диапазон 0–50"
+                        if (v !in 0f..40f) {
+                            breadInput.error = "Диапазон 0–40"
                             breadInput.requestFocus()
-                            Toast.makeText(this, "ХЕ вне диапазона", Toast.LENGTH_SHORT).show()
+                            Toast.makeText(this, "Аномальный уровень ХЕ", Toast.LENGTH_SHORT).show()
                             return@setOnClickListener
                         }
                         v

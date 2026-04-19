@@ -1,5 +1,6 @@
 package ru.artem_torpedo.diabetesdiary.ui.reminders
 
+import android.app.DatePickerDialog
 import android.app.TimePickerDialog
 import android.content.Context
 import android.content.Intent
@@ -17,6 +18,9 @@ import ru.artem_torpedo.diabetesdiary.ui.foodlog.FoodLogActivity
 import ru.artem_torpedo.diabetesdiary.ui.measurement.MeasurementsActivity
 import ru.artem_torpedo.diabetesdiary.ui.products.ProductsActivity
 import ru.artem_torpedo.diabetesdiary.ui.statistics.StatisticsActivity
+import java.text.SimpleDateFormat
+import java.util.Calendar
+import java.util.Date
 import java.util.Locale
 
 class RemindersActivity : AppCompatActivity() {
@@ -29,6 +33,10 @@ class RemindersActivity : AppCompatActivity() {
     private var reminderList: List<ReminderEntity> = emptyList()
     private lateinit var adapter: ArrayAdapter<String>
     private val items = mutableListOf<String>()
+
+    private val dateFormatter = SimpleDateFormat("dd.MM.yyyy", Locale.getDefault())
+    private val timeFormatter = SimpleDateFormat("HH:mm", Locale.getDefault())
+    private val dateTimeFormatter = SimpleDateFormat("dd.MM.yyyy HH:mm", Locale.getDefault())
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -66,29 +74,13 @@ class RemindersActivity : AppCompatActivity() {
         adapter = ArrayAdapter(this, android.R.layout.simple_list_item_1, items)
         listView.adapter = adapter
 
+        // Теперь обычный тап = редактирование
         listView.setOnItemClickListener { _, _, position, _ ->
-            val r = reminderList[position]
-            val updated = r.copy(enabled = !r.enabled)
-
-            viewModel.update(updated) {
-                if (updated.enabled) {
-                    ReminderScheduler.schedule(
-                        context = this,
-                        reminderId = updated.id,
-                        profileId = updated.profileId,
-                        title = updated.title,
-                        note = updated.note,
-                        hour = updated.hour,
-                        minute = updated.minute,
-                        repeatDaily = updated.repeatDaily
-                    )
-                } else {
-                    ReminderScheduler.cancel(this, updated.id)
-                }
-                viewModel.load(profileId)
-            }
+            val reminder = reminderList[position]
+            showAddOrEditDialog(existing = reminder)
         }
 
+        // Удержание = удаление
         listView.setOnItemLongClickListener { _, _, position, _ ->
             showDeleteDialog(reminderList[position])
             true
@@ -105,19 +97,15 @@ class RemindersActivity : AppCompatActivity() {
                 R.id.nav_measurements -> {
                     MeasurementsActivity.start(this, profileId, profileName); true
                 }
-
                 R.id.nav_statistics -> {
                     StatisticsActivity.start(this, profileId, profileName); true
                 }
-
                 R.id.nav_products -> {
                     ProductsActivity.start(this, profileId, profileName); true
                 }
-
                 R.id.nav_food_log -> {
                     FoodLogActivity.start(this, profileId, profileName); true
                 }
-
                 R.id.nav_reminders -> true
                 else -> false
             }
@@ -127,14 +115,17 @@ class RemindersActivity : AppCompatActivity() {
             reminderList = list
             items.clear()
             items.addAll(list.map { r ->
-                val time = String.format(Locale.getDefault(), "%02d:%02d", r.hour, r.minute)
                 val state = if (r.enabled) "Включено" else "Выключено"
                 val repeat = if (r.repeatDaily) "Ежедневно" else "Однократно"
+
                 buildString {
-                    append(time).append("  ").append(r.title)
-                    append("\n").append("$state, $repeat")
+                    append(dateTimeFormatter.format(Date(r.triggerAtMillis)))
+                    append("  ")
+                    append(r.title)
+                    append("\n")
+                    append("$state, $repeat")
                     r.note?.takeIf { it.isNotBlank() }?.let { append("\n$it") }
-                    append("\n(тап: вкл/выкл, удержание: удалить)")
+                    append("\n(тап: редактировать, удержание: удалить)")
                 }
             })
             adapter.notifyDataSetChanged()
@@ -145,37 +136,68 @@ class RemindersActivity : AppCompatActivity() {
 
     private fun showAddOrEditDialog(existing: ReminderEntity?) {
         val dialogView = layoutInflater.inflate(R.layout.dialog_add_reminder, null)
-        val titleInput = dialogView.findViewById<EditText>(R.id.reminderTitleInput)
-        val noteInput = dialogView.findViewById<EditText>(R.id.reminderNoteInput)
-        val timeButton = dialogView.findViewById<Button>(R.id.reminderTimeButton)
-        val repeatCheck = dialogView.findViewById<CheckBox>(R.id.repeatDailyCheck)
-        val enabledCheck = dialogView.findViewById<CheckBox>(R.id.enabledCheck)
 
-        var hour = existing?.hour ?: 9
-        var minute = existing?.minute ?: 0
+        val titleInput = dialogView.findViewById<EditText>(R.id.titleEditText)
+        val noteInput = dialogView.findViewById<EditText>(R.id.noteEditText)
+        val dateButton = dialogView.findViewById<Button>(R.id.dateButton)
+        val timeButton = dialogView.findViewById<Button>(R.id.timeButton)
+        val repeatCheck = dialogView.findViewById<CheckBox>(R.id.repeatDailyCheckBox)
+        val enabledCheck = dialogView.findViewById<CheckBox>(R.id.enabledCheckBox)
 
-        fun updateTimeText() {
-            timeButton.text = String.format(Locale.getDefault(), "Время: %02d:%02d", hour, minute)
+        val calendar = Calendar.getInstance()
+
+        if (existing != null) {
+            titleInput.setText(existing.title)
+            noteInput.setText(existing.note.orEmpty())
+            repeatCheck.isChecked = existing.repeatDaily
+            enabledCheck.isChecked = existing.enabled
+            calendar.timeInMillis = existing.triggerAtMillis
+        } else {
+            // Значения по умолчанию для нового напоминания
+            calendar.set(Calendar.SECOND, 0)
+            calendar.set(Calendar.MILLISECOND, 0)
         }
-        updateTimeText()
 
-        titleInput.setText(existing?.title.orEmpty())
-        noteInput.setText(existing?.note.orEmpty())
-        repeatCheck.isChecked = existing?.repeatDaily ?: true
-        enabledCheck.isChecked = existing?.enabled ?: true
+        fun updateDateTimeText() {
+            dateButton.text = "Дата: ${dateFormatter.format(calendar.time)}"
+            timeButton.text = "Время: ${timeFormatter.format(calendar.time)}"
+        }
+
+        updateDateTimeText()
+
+        dateButton.setOnClickListener {
+            DatePickerDialog(
+                this,
+                { _, year, month, dayOfMonth ->
+                    calendar.set(Calendar.YEAR, year)
+                    calendar.set(Calendar.MONTH, month)
+                    calendar.set(Calendar.DAY_OF_MONTH, dayOfMonth)
+                    updateDateTimeText()
+                },
+                calendar.get(Calendar.YEAR),
+                calendar.get(Calendar.MONTH),
+                calendar.get(Calendar.DAY_OF_MONTH)
+            ).show()
+        }
 
         timeButton.setOnClickListener {
             TimePickerDialog(
                 this,
-                { _, h, m -> hour = h; minute = m; updateTimeText() },
-                hour,
-                minute,
+                { _, hourOfDay, minute ->
+                    calendar.set(Calendar.HOUR_OF_DAY, hourOfDay)
+                    calendar.set(Calendar.MINUTE, minute)
+                    calendar.set(Calendar.SECOND, 0)
+                    calendar.set(Calendar.MILLISECOND, 0)
+                    updateDateTimeText()
+                },
+                calendar.get(Calendar.HOUR_OF_DAY),
+                calendar.get(Calendar.MINUTE),
                 true
             ).show()
         }
 
         val dialog = AlertDialog.Builder(this)
-            .setTitle(if (existing == null) "Новое напоминание" else "Редактировать")
+            .setTitle(if (existing == null) "Новое напоминание" else "Редактировать напоминание")
             .setView(dialogView)
             .setPositiveButton("Сохранить", null)
             .setNegativeButton("Отмена", null)
@@ -183,8 +205,8 @@ class RemindersActivity : AppCompatActivity() {
 
         dialog.setOnShowListener {
             dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener {
-                val t = titleInput.text.toString().trim()
-                if (t.length < 2) {
+                val title = titleInput.text.toString().trim()
+                if (title.length < 2) {
                     titleInput.error = "Минимум 2 символа"
                     titleInput.requestFocus()
                     Toast.makeText(this, "Введите название напоминания", Toast.LENGTH_SHORT).show()
@@ -195,13 +217,14 @@ class RemindersActivity : AppCompatActivity() {
                 val repeat = repeatCheck.isChecked
                 val enabled = enabledCheck.isChecked
 
+                val triggerAtMillis = calendar.timeInMillis
+
                 if (existing == null) {
                     val entity = ReminderEntity(
                         profileId = profileId,
-                        title = t,
+                        title = title,
                         note = note,
-                        hour = hour,
-                        minute = minute,
+                        triggerAtMillis = triggerAtMillis,
                         repeatDaily = repeat,
                         enabled = enabled
                     )
@@ -211,23 +234,16 @@ class RemindersActivity : AppCompatActivity() {
                         if (inserted.enabled) {
                             ReminderScheduler.schedule(
                                 context = this,
-                                reminderId = inserted.id,
-                                profileId = inserted.profileId,
-                                title = inserted.title,
-                                note = inserted.note,
-                                hour = inserted.hour,
-                                minute = inserted.minute,
-                                repeatDaily = inserted.repeatDaily
+                                reminder = inserted
                             )
                         }
                         viewModel.load(profileId)
                     }
                 } else {
                     val updated = existing.copy(
-                        title = t,
+                        title = title,
                         note = note,
-                        hour = hour,
-                        minute = minute,
+                        triggerAtMillis = triggerAtMillis,
                         repeatDaily = repeat,
                         enabled = enabled
                     )
@@ -237,13 +253,7 @@ class RemindersActivity : AppCompatActivity() {
                         if (updated.enabled) {
                             ReminderScheduler.schedule(
                                 context = this,
-                                reminderId = updated.id,
-                                profileId = updated.profileId,
-                                title = updated.title,
-                                note = updated.note,
-                                hour = updated.hour,
-                                minute = updated.minute,
-                                repeatDaily = updated.repeatDaily
+                                reminder = updated
                             )
                         }
                         viewModel.load(profileId)

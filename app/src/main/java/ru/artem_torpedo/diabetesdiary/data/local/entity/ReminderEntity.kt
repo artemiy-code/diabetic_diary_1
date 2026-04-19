@@ -18,14 +18,11 @@ import androidx.room.PrimaryKey
     ]
 )
 data class ReminderEntity(
-    @PrimaryKey(autoGenerate = true)
-    val id: Long = 0,
+    @PrimaryKey(autoGenerate = true) val id: Long = 0,
     val profileId: Long,
     val title: String,
-    val note: String? = null,
-    val hour: Int,
-    val minute: Int,
-    val repeatDaily: Boolean = true,
-    val enabled: Boolean = true,
-    val createdAtMillis: Long = System.currentTimeMillis()
+    val note: String?,
+    val triggerAtMillis: Long,
+    val repeatDaily: Boolean,
+    val enabled: Boolean
 )

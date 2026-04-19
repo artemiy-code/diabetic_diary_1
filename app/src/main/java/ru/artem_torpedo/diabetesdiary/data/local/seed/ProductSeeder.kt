@@ -10,7 +10,7 @@ import androidx.core.content.edit
 object ProductSeeder {
 
     private const val PREFS = "seed_prefs"
-    private const val KEY_DONE = "products_seed_done_v6"
+    private const val KEY_DONE = "products_seed_done_v7"
     private const val ASSET_FILE = "products_seed.json"
 
     suspend fun seedIfNeeded(context: Context) {

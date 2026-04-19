@@ -23,7 +23,7 @@ import ru.artem_torpedo.diabetesdiary.data.local.entity.ReminderEntity
         FoodEntryEntity::class,
         ReminderEntity::class,
     ],
-    version = 11
+    version = 12
 )
 abstract class AppDatabase : RoomDatabase() {
 

@@ -6,7 +6,7 @@ import ru.artem_torpedo.diabetesdiary.data.local.entity.ReminderEntity
 @Dao
 interface ReminderDao {
 
-    @Query("SELECT * FROM reminders WHERE profileId = :profileId ORDER BY hour ASC, minute ASC")
+    @Query("SELECT * FROM reminders WHERE profileId = :profileId ORDER BY triggerAtMillis ASC")
     suspend fun getByProfile(profileId: Long): List<ReminderEntity>
 
     @Query("SELECT * FROM reminders WHERE id = :id LIMIT 1")

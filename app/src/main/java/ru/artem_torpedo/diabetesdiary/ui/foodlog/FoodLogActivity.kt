@@ -235,19 +235,9 @@ class FoodLogActivity : AppCompatActivity() {
                 if (grams == null) {
                     gramsInput.error = "Введите число"
                     gramsInput.requestFocus()
-                    Toast.makeText(
-                        this,
-                        "Введите корректное количество граммов",
-                        Toast.LENGTH_SHORT
-                    ).show()
                     return@setOnClickListener
                 }
-                if (grams <= 0f) {
-                    gramsInput.error = "Должно быть больше 0"
-                    gramsInput.requestFocus()
-                    return@setOnClickListener
-                }
-                if (grams > 5000f) {
+                if (grams > 2500f) {
                     gramsInput.error = "Слишком большое значение"
                     gramsInput.requestFocus()
                     return@setOnClickListener

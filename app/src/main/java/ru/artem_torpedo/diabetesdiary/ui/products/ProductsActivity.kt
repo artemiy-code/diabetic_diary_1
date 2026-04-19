@@ -165,12 +165,12 @@ class ProductsActivity : AppCompatActivity() {
                 }
 
                 val cal =
-                    parseRequiredFloat(caloriesInput, "Калории", 2000f) ?: return@setOnClickListener
+                    parseRequiredFloat(caloriesInput, "Калории", 900f) ?: return@setOnClickListener
                 val carbs =
-                    parseRequiredFloat(carbsInput, "Углеводы", 300f) ?: return@setOnClickListener
+                    parseRequiredFloat(carbsInput, "Углеводы", 100f) ?: return@setOnClickListener
                 val prot =
-                    parseRequiredFloat(proteinInput, "Белки", 300f) ?: return@setOnClickListener
-                val fatV = parseRequiredFloat(fatInput, "Жиры", 300f) ?: return@setOnClickListener
+                    parseRequiredFloat(proteinInput, "Белки", 40f) ?: return@setOnClickListener
+                val fatV = parseRequiredFloat(fatInput, "Жиры", 100f) ?: return@setOnClickListener
 
                 val entity = existing?.copy(
                     name = name,
