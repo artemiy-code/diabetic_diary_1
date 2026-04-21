@@ -8,6 +8,13 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.graphics.toColorInt
+import com.github.mikephil.charting.charts.LineChart
+import com.github.mikephil.charting.components.XAxis
+import com.github.mikephil.charting.data.Entry
+import com.github.mikephil.charting.data.LineData
+import com.github.mikephil.charting.data.LineDataSet
+import com.github.mikephil.charting.formatter.ValueFormatter
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.android.material.datepicker.MaterialDatePicker
 import ru.artem_torpedo.diabetesdiary.R
@@ -17,16 +24,9 @@ import ru.artem_torpedo.diabetesdiary.ui.measurement.MeasurementsActivity
 import ru.artem_torpedo.diabetesdiary.ui.products.ProductsActivity
 import ru.artem_torpedo.diabetesdiary.ui.reminders.RemindersActivity
 import java.util.Calendar
+import java.util.Date
 import java.util.Locale
 import java.util.TimeZone
-import com.github.mikephil.charting.charts.LineChart
-import com.github.mikephil.charting.components.XAxis
-import com.github.mikephil.charting.data.Entry
-import com.github.mikephil.charting.data.LineData
-import com.github.mikephil.charting.data.LineDataSet
-import com.github.mikephil.charting.formatter.ValueFormatter
-import java.text.SimpleDateFormat
-import java.util.Date
 
 class StatisticsActivity : AppCompatActivity() {
 
@@ -42,6 +42,14 @@ class StatisticsActivity : AppCompatActivity() {
     private lateinit var maxText: TextView
     private lateinit var countText: TextView
     private lateinit var chart: LineChart
+
+    private lateinit var nutritionChart: LineChart
+    private lateinit var nutritionAvgText: TextView
+
+    private lateinit var caloriesAvgValue: TextView
+    private lateinit var proteinAvgValue: TextView
+    private lateinit var fatAvgValue: TextView
+    private lateinit var carbsAvgValue: TextView
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -60,7 +68,18 @@ class StatisticsActivity : AppCompatActivity() {
         maxText = findViewById(R.id.maxValue)
         countText = findViewById(R.id.countValue)
         chart = findViewById(R.id.glucoseChart)
-        setupChart()
+        setupChart(chart)
+
+        nutritionChart = findViewById(R.id.nutritionChart)
+        nutritionAvgText = findViewById(R.id.nutritionAvgText)
+
+        caloriesAvgValue = findViewById(R.id.caloriesAvgValue)
+        proteinAvgValue = findViewById(R.id.proteinAvgValue)
+        fatAvgValue = findViewById(R.id.fatAvgValue)
+        carbsAvgValue = findViewById(R.id.carbsAvgValue)
+
+        setupChart(nutritionChart)
+
 
         filterButton = findViewById(R.id.filterButtonStats)
 
@@ -112,6 +131,15 @@ class StatisticsActivity : AppCompatActivity() {
             maxText.text = state.maxGlucose?.let { format1(it) } ?: "—"
             countText.text = state.count.toString()
             renderChart(state.points)
+
+            nutritionAvgText.text = "Среднее в день:"
+
+            caloriesAvgValue.text = format1(state.avgCaloriesPerDay)
+            proteinAvgValue.text = format1(state.avgProteinPerDay)
+            fatAvgValue.text = format1(state.avgFatPerDay)
+            carbsAvgValue.text = format1(state.avgCarbsPerDay)
+
+            renderNutritionChart(state.nutritionPoints)
         }
 
         // по умолчанию стоит стата за последние 7 дней
@@ -124,14 +152,14 @@ class StatisticsActivity : AppCompatActivity() {
         updateFilterButtonState()
     }
 
-    private fun setupChart() {
+    private fun setupChart(chart : LineChart) {
         chart.description.isEnabled = false
         chart.legend.isEnabled = false
         chart.setTouchEnabled(true)
         chart.isDragEnabled = true
         chart.setScaleEnabled(true)
         chart.setPinchZoom(true)
-        chart.setNoDataText("Нет данных за период")
+        chart.setNoDataText("Нет данных по сахару за период")
 
         chart.axisRight.isEnabled = false
 
@@ -210,6 +238,80 @@ class StatisticsActivity : AppCompatActivity() {
         val from = fromDateMillis ?: return
         val to = toDateMillis ?: return
         viewModel.loadStatistics(profileId, from, to)
+    }
+
+
+    private fun renderNutritionChart(points: List<DailyNutritionPoint>) {
+        if (points.isEmpty()) {
+            nutritionChart.clear()
+            nutritionChart.invalidate()
+            return
+        }
+
+        val caloriesEntries = points.mapIndexed { index, p ->
+            Entry(index.toFloat(), p.totalCalories)
+        }
+        val proteinEntries = points.mapIndexed { index, p ->
+            Entry(index.toFloat(), p.totalProtein)
+        }
+        val fatEntries = points.mapIndexed { index, p ->
+            Entry(index.toFloat(), p.totalFat)
+        }
+        val carbsEntries = points.mapIndexed { index, p ->
+            Entry(index.toFloat(), p.totalCarbs)
+        }
+
+        val caloriesSet = LineDataSet(caloriesEntries, "Калории").apply {
+            color = "#FF9800".toColorInt() // оранжевый
+            setCircleColor(color)
+            lineWidth = 2f
+            circleRadius = 3f
+            setDrawValues(false)
+        }
+
+        val proteinSet = LineDataSet(proteinEntries, "Белки").apply {
+            color = "#4CAF50".toColorInt() // зелёный
+            setCircleColor(color)
+            lineWidth = 2f
+            circleRadius = 3f
+            setDrawValues(false)
+        }
+
+        val fatSet = LineDataSet(fatEntries, "Жиры").apply {
+            color = "#F44336".toColorInt() // красный
+            setCircleColor(color)
+            lineWidth = 2f
+            circleRadius = 3f
+            setDrawValues(false)
+        }
+
+        val carbsSet = LineDataSet(carbsEntries, "Углеводы").apply {
+            color = "#2196F3".toColorInt() // синий
+            setCircleColor(color)
+            lineWidth = 2f
+            circleRadius = 3f
+            setDrawValues(false)
+        }
+
+        nutritionChart.data = LineData(
+            caloriesSet,
+            proteinSet,
+            fatSet,
+            carbsSet
+        )
+
+        nutritionChart.xAxis.valueFormatter = object : ValueFormatter() {
+            private val sdf = java.text.SimpleDateFormat("dd.MM", Locale.getDefault())
+
+            override fun getFormattedValue(value: Float): String {
+                val index = value.toInt()
+                return if (index in points.indices) {
+                    sdf.format(Date(points[index].dayStartMillis))
+                } else ""
+            }
+        }
+
+        nutritionChart.invalidate()
     }
 
     private fun showFilterDialog(profileId: Long) {
