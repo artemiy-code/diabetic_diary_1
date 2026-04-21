@@ -135,7 +135,7 @@ class StatisticsActivity : AppCompatActivity() {
 
         chart.axisRight.isEnabled = false
 
-        // Добавляем отступы, чтобы подписи по Y не уезжали за экран
+        // отступы, чтобы подписи по Y не уезжали за экран
         chart.minOffset = 14f
 
         val xAxis = chart.xAxis
@@ -143,7 +143,7 @@ class StatisticsActivity : AppCompatActivity() {
         xAxis.granularity = 1f
         xAxis.setDrawGridLines(false)
 
-        // Убираем текстовые метки по оси X
+        // убрал текстовые метки по оси X
         xAxis.setDrawLabels(false)
         xAxis.setDrawAxisLine(true)
 
@@ -152,7 +152,7 @@ class StatisticsActivity : AppCompatActivity() {
         leftAxis.setDrawGridLines(true)
         leftAxis.granularity = 1f
 
-        // Чтобы значения по Y всегда помещались
+        // чтобы значения по Y всегда помещались
         leftAxis.setDrawAxisLine(true)
         leftAxis.setDrawZeroLine(false)
     }
@@ -182,7 +182,7 @@ class StatisticsActivity : AppCompatActivity() {
         val lineData = LineData(dataSet)
         chart.data = lineData
 
-        // Полностью убираем подписи времени по оси X
+        // полностью убираем подписи времени по оси X
         chart.xAxis.valueFormatter = object : ValueFormatter() {
             override fun getFormattedValue(value: Float): String = ""
         }
@@ -190,15 +190,14 @@ class StatisticsActivity : AppCompatActivity() {
         val minY = sortedPoints.minOf { it.glucose }
         val maxY = sortedPoints.maxOf { it.glucose }
 
-        // Делаем аккуратный диапазон оси Y с запасом
+        // делаем аккуратный диапазон оси Y с запасом
         val axisMin = (kotlin.math.floor(minY.toDouble()).toFloat() - 1f).coerceAtLeast(0f)
         val axisMax = kotlin.math.ceil(maxY.toDouble()).toFloat() + 1f
 
         chart.axisLeft.axisMinimum = axisMin
         chart.axisLeft.axisMaximum = axisMax
 
-        // Если точек мало, показываем все
-        // Если много, пользователь сможет скроллить
+        // Если точек мало, показываем все, а если много, пользователь сможет скроллить
         chart.setVisibleXRangeMaximum(6f)
         chart.moveViewToX((entries.size - 1).coerceAtLeast(0).toFloat())
 
@@ -237,6 +236,7 @@ class StatisticsActivity : AppCompatActivity() {
 
         picker.show(supportFragmentManager, "statistics_date_range_picker")
     }
+
     private fun clearDateFilter(profileId: Long) {
         val now = System.currentTimeMillis()
         fromDateMillis = startOfDay(now - 7L * 24L * 60L * 60L * 1000L)
@@ -294,8 +294,6 @@ class StatisticsActivity : AppCompatActivity() {
 
         return localCalendar.timeInMillis
     }
-
-
 
 
     private fun startOfDay(timeMillis: Long): Long {

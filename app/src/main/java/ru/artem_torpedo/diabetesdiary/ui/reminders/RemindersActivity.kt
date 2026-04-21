@@ -74,7 +74,7 @@ class RemindersActivity : AppCompatActivity() {
         adapter = ArrayAdapter(this, android.R.layout.simple_list_item_1, items)
         listView.adapter = adapter
 
-        // Теперь обычный тап = редактирование
+        // обычный тап = редактирование
         listView.setOnItemClickListener { _, _, position, _ ->
             val reminder = reminderList[position]
             showAddOrEditDialog(existing = reminder)
@@ -125,7 +125,6 @@ class RemindersActivity : AppCompatActivity() {
                     append("\n")
                     append("$state, $repeat")
                     r.note?.takeIf { it.isNotBlank() }?.let { append("\n$it") }
-                    append("\n(тап: редактировать, удержание: удалить)")
                 }
             })
             adapter.notifyDataSetChanged()
