@@ -29,4 +29,11 @@ class ProfileViewModel(application: Application) :
             loadProfiles()
         }
     }
+
+    fun delete(profile: ProfileEntity, onDone: () -> Unit) {
+        viewModelScope.launch {
+            repository.delete(profile)
+            onDone()
+        }
+    }
 }

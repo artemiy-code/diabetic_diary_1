@@ -16,4 +16,8 @@ class ProfileRepository(context: Context) {
     suspend fun addProfile(profile: ProfileEntity) {
         profileDao.insert(profile)
     }
+
+    suspend fun delete(profile: ProfileEntity) {
+        profileDao.delete(profile)
+    }
 }

@@ -15,6 +15,7 @@ import androidx.annotation.RequiresPermission
 import androidx.appcompat.app.AlertDialog
 import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.launch
+import ru.artem_torpedo.diabetesdiary.data.local.entity.ProfileEntity
 import ru.artem_torpedo.diabetesdiary.data.local.seed.ProductSeeder
 import ru.artem_torpedo.diabetesdiary.ui.measurement.MeasurementsActivity
 
@@ -63,8 +64,27 @@ class MainActivity : AppCompatActivity() {
             profile?.let {
                 MeasurementsActivity.start(this, it.id, it.name)
             }
+            listView.setOnItemLongClickListener { _, _, position, _ ->
+                val profile = viewModel.profiles.value?.get(position)
+                showDeleteProfileDialog(profile!!)
+                true
+            }
         }
 
+    }
+
+    private fun showDeleteProfileDialog(profile: ProfileEntity) {
+        AlertDialog.Builder(this)
+            .setTitle("Удалить профиль?")
+            .setMessage("Профиль \"${profile.name}\" будет удалён вместе со всеми связанными данными.")
+            .setPositiveButton("Удалить") { _, _ ->
+                viewModel.delete(profile) {
+                    viewModel.loadProfiles()
+                    Toast.makeText(this, "Профиль удалён", Toast.LENGTH_SHORT).show()
+                }
+            }
+            .setNegativeButton("Отмена", null)
+            .show()
     }
 
     private fun showAddProfileDialog() {
