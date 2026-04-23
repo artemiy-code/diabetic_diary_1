@@ -152,7 +152,7 @@ class StatisticsActivity : AppCompatActivity() {
         updateFilterButtonState()
     }
 
-    private fun setupChart(chart : LineChart) {
+    private fun setupChart(chart: LineChart) {
         chart.description.isEnabled = false
         chart.legend.isEnabled = false
         chart.setTouchEnabled(true)
@@ -161,12 +161,23 @@ class StatisticsActivity : AppCompatActivity() {
         chart.setPinchZoom(true)
         chart.setNoDataText("Нет данных по сахару за период")
 
+        val axisTextColor = "#B0B0B0".toColorInt()
+
+
+
+        val rightAxis = chart.axisRight
+        rightAxis.textColor = axisTextColor
+
+        chart.legend.textColor = axisTextColor
+
+
         chart.axisRight.isEnabled = false
 
         // отступы, чтобы подписи по Y не уезжали за экран
         chart.minOffset = 14f
 
         val xAxis = chart.xAxis
+        xAxis.textColor = axisTextColor
         xAxis.position = XAxis.XAxisPosition.BOTTOM
         xAxis.granularity = 1f
         xAxis.setDrawGridLines(false)
@@ -176,9 +187,11 @@ class StatisticsActivity : AppCompatActivity() {
         xAxis.setDrawAxisLine(true)
 
         val leftAxis = chart.axisLeft
+        leftAxis.textColor = axisTextColor
         leftAxis.axisMinimum = 0f
         leftAxis.setDrawGridLines(true)
         leftAxis.granularity = 1f
+        leftAxis.gridColor = "#33B0B0B0".toColorInt()
 
         // чтобы значения по Y всегда помещались
         leftAxis.setDrawAxisLine(true)
